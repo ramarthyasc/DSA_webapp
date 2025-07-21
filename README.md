@@ -1,0 +1,1 @@
+Create this project - Learn everything (concepts) in depth + Tools (MERN - 80/20 usual patterns of code (Patterns from Open source, Documentations, Freecodecamp docs)) - while going the route - WITH A HIGH LEVEL Map in mind.
