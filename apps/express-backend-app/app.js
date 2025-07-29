@@ -3,6 +3,7 @@ const app = express()
 const port = 3000
 
 const path = require('path');
+const signupRouter = require('./routes/signupRouter');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -16,34 +17,18 @@ const QUESTIONS = [{
 
 const SUBMISSION = [{}]
 
+
+///////////////////////////////////////////////////////////////////
+
+app.use(express.static(path.join(__dirname, 'view'), { index: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use('/signup', signupRouter)
+
 app.get('/', (req, res) => {
   res.send("How are you man... say /signup");
 })
 
-
-
-
-// Attack this signup first :
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true }));
-//Add logic to decode body
-//body should have email & password 
-// Store email & pass (as for now) in the USERs array above (only if the use with the given email doesn't exist)
-// return 200 OK status code to client
-app.route('/signup')
-  .get((req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  })
-  .post((req, res) => {
-    res.send(`Your email id is : ${req.body.user.email_id}`);
-  })
-
-
-
-
-
-
+///////////////////////////////////////////////////////////////////
 
 
 app.post('/login', (req, res) => {
