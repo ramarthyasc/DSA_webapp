@@ -1,9 +1,6 @@
 const { Router } = require('express');
 const signupRouter = Router();
-
-
-const path = require('path');
-const postUserDetails = require('../controller/userController.js');
+const { postUserDetails, displayUserDetails } = require('../controller/userController.js');
 
 
 
@@ -18,10 +15,9 @@ const postUserDetails = require('../controller/userController.js');
 // return 200 OK status code to client
 signupRouter.route('/')
   .get((req, res) => {
-    res.sendFile(path.join(__dirname, '../view/', 'index.html'));
+    res.render('index', { foo: 'Welcome to the world of Algorithms' });
   })
   .post(postUserDetails)
-
-
+signupRouter.get('/database', displayUserDetails)
 
 module.exports = signupRouter

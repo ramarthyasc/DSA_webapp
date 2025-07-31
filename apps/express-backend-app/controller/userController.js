@@ -1,12 +1,24 @@
-const db = require('../model/db.js');
+const userStorage = require('../model/db.js');
 
 
+
+
+
+
+// Add code to integrate the DB function and send a response
+// to the client
 const postUserDetails = function(req, res, next) {
-  // Add code to integrate the DB function and send a response
-  // to the client
-  db.postUserDetails(req.body);
+  const { user: { emailId, password } } = req.body;
+  console.log(emailId);
+  console.log(password);
+  userStorage.addUser({ emailId, password });
 
-  res.send(`Your updated database is here : ${JSON.stringify(db.userDb)}`);
+  res.redirect(`${req.baseUrl}/database`);
+}
+// A Middleware to display updated database in the redirect GET.
+const displayUserDetails = function(req, res) {
+  res.send(`Your updated database is here : ${JSON.stringify(userStorage.userDb)}`);
 }
 
-module.exports = postUserDetails;
+
+module.exports = { postUserDetails, displayUserDetails };

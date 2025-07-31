@@ -20,12 +20,14 @@ const SUBMISSION = [{}]
 
 ///////////////////////////////////////////////////////////////////
 
+app.set('views', './view/')
+app.set('view engine', 'ejs')
 app.use(express.static(path.join(__dirname, 'view'), { index: false }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/signup', signupRouter)
 
 app.get('/', (req, res) => {
-  res.send("How are you man... say /signup");
+  res.send("<html><head><title>DSA Store</title></head><body><a href=\"/signup\">Signup</a></body></html>");
 })
 
 ///////////////////////////////////////////////////////////////////
