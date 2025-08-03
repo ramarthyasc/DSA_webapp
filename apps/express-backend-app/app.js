@@ -21,7 +21,7 @@ const SUBMISSION = [{}]
 
 ///////////////////////////////////////////////////////////////////
 
-app.set('views', './view/')
+app.set('views', './view')
 app.set('view engine', 'ejs')
 app.use(express.static(path.join(__dirname, 'view'), { index: false }));
 app.use(express.urlencoded({ extended: true }));

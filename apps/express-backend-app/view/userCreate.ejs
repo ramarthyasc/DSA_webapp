@@ -12,6 +12,8 @@
     <a href="<%=locals.baseUrl%>">Admin page</a>
   </nav>
   <h1>Register your Details : </h1>
+  <!-- The error ejs code is integrated into this ejs file and send to client -->
+  <p><%- include("./partials/error.ejs") %></p>
   <form action="<%=locals.baseUrl%>/create" method="post">
     <div class="fill">
       <label for="firstName">First name : </label>

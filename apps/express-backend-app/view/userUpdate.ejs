@@ -13,7 +13,8 @@
   </nav>
 
   <h1>Update your Details :</h1>
-
+  <!-- The error code is integrated into this ejs file and send to client -->
+  <p><%- include("./partials/error.ejs") %></p>
   <form action="<%=locals.baseUrl%>/update/<%=user.id%>" method="post">
     <div>
       <label for="firstName">First name : </label>

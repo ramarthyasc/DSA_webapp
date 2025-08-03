@@ -10,8 +10,8 @@
   <form action="<%=locals.baseUrl%>/create" method="get">
     <button type="submit">Create User</button>
   </form>
-  <ol>
-    <% if (locals.users) {%>
+  <% if (locals.users) {%>
+    <ol>
       <% users.forEach(user=> { %>
         <li>
           <strong>Name: </strong>
@@ -27,9 +27,8 @@
                 </form>
         </li>
         <%});%>
-          <%}%>
-
-  </ol>
+    </ol>
+    <%}%>
 
 </body>
 
