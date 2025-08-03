@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Update User</title>
+</head>
+
+<body>
+  <nav>
+    <a href="<%=locals.baseUrl%>/list">User list</a>
+    <a href="<%=locals.baseUrl%>">Admin page</a>
+  </nav>
+
+  <h1>Update your Details :</h1>
+
+  <form action="<%=locals.baseUrl%>/update/<%=user.id%>" method="post">
+    <div>
+      <label for="firstName">First name : </label>
+      <input type="text" id="firstName" name="firstName" value="<%=user.firstName%>">
+    </div>
+    <div>
+      <label for="lastName">Last name : </label>
+      <input type="text" id="lastName" name="lastName" value="<%=user.lastName%>">
+    </div>
+    <div>
+      <label for="emailId">Email ID : </label>
+      <input type="text" id="emailId" name="emailId" value="<%=user.emailId%>">
+    </div>
+    <div>
+      <button type="submit">Update</button>
+    </div>
+
+  </form>
+
+</body>
+
+</html>

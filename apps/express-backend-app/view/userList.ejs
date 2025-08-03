@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>User list</title>
+</head>
+
+<body>
+  <form action="<%=locals.baseUrl%>/create" method="get">
+    <button type="submit">Create User</button>
+  </form>
+  <ol>
+    <% if (locals.users) {%>
+      <% users.forEach(user=> { %>
+        <li>
+          <strong>Name: </strong>
+          <%=user.firstName%>
+            <%=user.lastName%>
+              <strong>Email ID: </strong>
+              <%=user.emailId%>
+                <form style="display: inline;" action="<%=locals.baseUrl%>/update/<%=user.id%>" method="get">
+                  <button type="submit">Update</button>
+                </form>
+                <form style="display: inline;" action="<%=locals.baseUrl%>/delete/<%=user.id%>" method="post">
+                  <button type="submit" onclick="return confirm('Confirm deletion of data ?')">Delete</button>
+                </form>
+        </li>
+        <%});%>
+          <%}%>
+
+  </ol>
+
+</body>
+
+
+</html>
