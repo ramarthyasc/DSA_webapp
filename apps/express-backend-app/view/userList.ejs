@@ -10,25 +10,57 @@
   <form action="<%=locals.baseUrl%>/create" method="get">
     <button type="submit">Create User</button>
   </form>
-  <% if (locals.users) {%>
-    <ol>
-      <% users.forEach(user=> { %>
-        <li>
-          <strong>Name: </strong>
-          <%=user.firstName%>
-            <%=user.lastName%>
-              <strong>Email ID: </strong>
-              <%=user.emailId%>
-                <form style="display: inline;" action="<%=locals.baseUrl%>/update/<%=user.id%>" method="get">
-                  <button type="submit">Update</button>
-                </form>
-                <form style="display: inline;" action="<%=locals.baseUrl%>/delete/<%=user.id%>" method="post">
-                  <button type="submit" onclick="return confirm('Confirm deletion of data ?')">Delete</button>
-                </form>
-        </li>
-        <%});%>
-    </ol>
-    <%}%>
+  <h3 style="text-decoration: underline;">Search</h6>
+    <form action="<%=locals.baseUrl%>/search">
+      <label for="searchUsers">First Name</label>
+      <input type="text" id="searchUsers" name="searchUsers">
+    </form>
+
+    <% if (locals.searchUsers) {%>
+      <ol>
+        <% searchUsers.forEach(searchUser=> {%>
+          <li>
+            <strong>Name: </strong>
+            <%=searchUser.firstName%>
+              <%=searchUser.lastName%>
+                <strong>Email ID: </strong>
+                <%=searchUser.emailId%>
+                  <form style="display: inline;" action="<%=locals.baseUrl%>/update/<%=searchUser.id%>" method="get">
+                    <button type="submit">Update</button>
+                  </form>
+                  <form style="display: inline;" action="<%=locals.baseUrl%>/delete/<%=searchUser.id%>" method="post">
+                    <button type="submit" onclick="return confirm('Confirm deletion of data ?')">Delete</button>
+                  </form>
+          </li>
+          <%});%>
+      </ol>
+      <p>
+        <a href="<%=locals.baseUrl%>/list">reset search</a>
+      </p>
+      <%}%>
+
+
+        <h3 style="text-decoration: underline;">User List</h6>
+
+          <% if (locals.users) {%>
+            <ol>
+              <% users.forEach(user=> { %>
+                <li>
+                  <strong>Name: </strong>
+                  <%=user.firstName%>
+                    <%=user.lastName%>
+                      <strong>Email ID: </strong>
+                      <%=user.emailId%>
+                        <form style="display: inline;" action="<%=locals.baseUrl%>/update/<%=user.id%>" method="get">
+                          <button type="submit">Update</button>
+                        </form>
+                        <form style="display: inline;" action="<%=locals.baseUrl%>/delete/<%=user.id%>" method="post">
+                          <button type="submit" onclick="return confirm('Confirm deletion of data ?')">Delete</button>
+                        </form>
+                </li>
+                <%});%>
+            </ol>
+            <%}%>
 
 </body>
 

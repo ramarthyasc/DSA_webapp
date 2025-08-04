@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const userbaseRouter = Router();
-const { userListGet, userCreateGet, userCreatePost, userAdminGet, userUpdateGet, userUpdatePost, userDeletePost } =
+const { userListGet, userCreateGet, userCreatePost, userAdminGet,
+  userUpdateGet, userUpdatePost, userDeletePost, userSearchGet } =
   require('../controller/userbaseController.js')
 
 userbaseRouter.use((req, res, next) => {
@@ -21,6 +22,8 @@ userbaseRouter.route('/update/:id')
   .post(userUpdatePost);
 
 userbaseRouter.post('/delete/:id', userDeletePost);
+
+userbaseRouter.get('/search', userSearchGet);
 
 // userbaseRouter.get('/search', userSearchGet);
 
