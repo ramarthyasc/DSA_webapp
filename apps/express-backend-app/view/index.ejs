@@ -7,25 +7,40 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 
+
 <body class="full">
-  <form action="/signup" method="post">
+  <form action="<%= locals.baseUrl %>/" method="post">
     <div>
-      <label for="userEmailId">Email id :</label>
-      <input type="text" id="userEmailId" name="user[emailId]">
+      <label for="emailId">Email id :</label>
+      <input type="text" id="emailId" name="emailId">
     </div>
     <div>
-      <label for="userPassword">Password :</label>
-      <input type="text" id="userPassword" name="user[password]">
+      <label for="password">Password :</label>
+      <input id="password" class="pass" type="password" name="password">
     </div>
     <div>
-      <button type="submit">Submit</button>
+      <label for="confirmPassword">Confirm Password :</label>
+      <input id="confirmPassword" class="pass" type="password" name="confirmPassword">
+    </div>
+    <div>
+      <input type="checkbox" onclick="show()" name="showPassword">
+      <label for="showPassword">Show password</label>
+      <button style="margin-left: 60px;" type="submit">Submit</button>
     </div>
 
   </form>
   <p>
-    Hello !! <%= foo %>
+    Hello !! <%= message %>
   </p>
-  <script> let constant = "mar"</script>
+  <p> <%- include("./partials/error.ejs") %> </p>
+  <script>
+    const show = function () {
+      const elemArray = document.getElementsByClassName("pass");
+      for (let elem of elemArray) {
+        elem.type = elem.type === "password" ? "text" : "password"
+      }
+    }
+  </script>
 
 </body>
 

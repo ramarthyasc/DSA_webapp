@@ -4,7 +4,9 @@ class UserStorage {
     this.id = 0;
     this.userDb = {};
   }
-
+  listUser() {
+    return this.userDb;
+  }
   addUser({ emailId, password }) {
     const id = this.id;
     this.userDb[id] = { id, emailId, password };
