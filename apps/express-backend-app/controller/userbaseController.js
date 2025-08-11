@@ -1,4 +1,4 @@
-const db = require('../model/userbaseData.js');
+const db = require('../db/userbaseData.js');
 const { body, validationResult } = require('express-validator');
 const { search } = require('../routers/signupRouter.js');
 
