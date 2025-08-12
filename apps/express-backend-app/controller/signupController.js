@@ -38,12 +38,17 @@ exports.addUserPost = [
     //Adding user into database
     await addUserService(userDetail, addUser);
 
-    res.redirect(`${req.baseUrl}/database`);
+    res.redirect(`/login`);
   },
 ]
 
+
+
 // A Middleware to display updated database in the redirect GET.
 exports.displayUserGet = async function(req, res) {
+
   const text = await displayUserService(listUser);
   res.send(`Updated database is here : ${text}`);
 }
+
+

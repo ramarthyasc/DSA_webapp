@@ -5,6 +5,7 @@ const port = 3000
 const path = require('path');
 const signupRouter = require('./routers/signupRouter');
 const userbaseRouter = require('./routers/userbaseRouter.js');
+const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -26,26 +27,29 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'view'), { index: false }));
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/admin', userbaseRouter)
-app.use('/signup', signupRouter)
 
 app.get('/', (req, res) => {
   res.send("<html><head><title>DSA Store</title></head><body><a href=\"/signup\">Signup</a></body></html>");
-})
+});
+app.use('/admin', userbaseRouter); //Mini-CRUD app
+app.use('/signup', signupRouter);
+
+//For Login, Add logic to decode body
+//body should have email & password 
+
+//Check if the user with the given email exists in the USERs array
+//Also ensure that the password is the same
+//If pass is same, return 200 status code to client.
+//If the password not same, return back 401 status code to client.
+app.route('/login')
+  .get(userLoginGet)
+  .post(userLoginAuthPost);
+
 
 ///////////////////////////////////////////////////////////////////
 
 
-app.post('/login', (req, res) => {
 
-  //Add logic to decode body
-  //body should have email & password 
-
-  //Check if the user with the given email exists in the USERs array
-  //Also ensure that the password is the same
-  //If pass is same, return 200 status code to client.
-  //If the password not same, return back 401 status code to client.
-})
 
 app.get('/questions', (req, res) => {
   //return the user all the questions in the QUESTIONS array
