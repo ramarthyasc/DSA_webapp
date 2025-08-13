@@ -1,11 +1,15 @@
 const express = require('express')
 const app = express()
-const port = 3000
+require('dotenv').config();
+const port = process.env.PORT || 3000
+const cookieParser = require('cookie-parser');
+
 
 const path = require('path');
 const signupRouter = require('./routers/signupRouter');
 const userbaseRouter = require('./routers/userbaseRouter.js');
 const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
+const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 
 const USERS = [];
 const QUESTIONS = [{
@@ -26,7 +30,7 @@ app.set('views', ['./view', './view/miniCrud/']);
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'view'), { index: false }));
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser()) //cookieParser() returns a middleware.
 
 app.get('/', (req, res) => {
   res.send("<html><head><title>DSA Store</title></head><body><a href=\"/signup\">Signup</a></body></html>");
@@ -45,6 +49,9 @@ app.route('/login')
   .get(userLoginGet)
   .post(userLoginAuthPost);
 
+//secure routes
+app.get('/home', jwtVerification, userHomeGet);
+app.get('/problemset', jwtVerification, userProblemsetGet);
 
 ///////////////////////////////////////////////////////////////////
 

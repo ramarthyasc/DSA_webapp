@@ -11,7 +11,7 @@ async function addUser({ emailId, password }) {
 
 async function searchUser({ emailId }) {
   try {
-    const { rows } = await pool.query("SELECT email_id, password FROM user_details " +
+    const { rows } = await pool.query("SELECT id, email_id, password FROM user_details " +
       "WHERE email_id = $1::text", [emailId]);
     return rows;
 

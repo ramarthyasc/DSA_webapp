@@ -23,20 +23,24 @@ exports.userLoginAuthPost = async (req, res) => {
     return res.status(400).send("Email not registered. </br> <a href='/signup'>Signup</a> <a href='/login'>Go back</a> ");
   }
 
-  //Verify the password
-  let correctPasswordBool;
+  //Verify the password & return JWT
+  let jwt;
   try {
-    correctPasswordBool = await verifyPassword(loginDetails, userDetail);
+    jwt = await verifyPassword(loginDetails, userDetail);
   } catch (err) {
     return res.status(400).send(`${err}`);
   }
-  //temp
-  return res.send(`Your password is ${correctPasswordBool}`)
-
-  //  correctPasswordBool
 
 
+  //Send JWT through response header in the Set-Cookie property of the header, and Store it in the Browser cookies storage.
+  //While sending Redirect resonse to the Browser, the Cookie is stored. And Send in every Subsequent requests to the Server.
+  res.cookie('auth_jwt', jwt, {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60,
+    secure: false, // As the localserver is not https. Change it to secure when in Production.
+    sameSite: "strict",
+  });
 
-
+  res.redirect('/home');
 
 }
