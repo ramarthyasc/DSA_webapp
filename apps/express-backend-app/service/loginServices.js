@@ -18,10 +18,10 @@ exports.verifyPassword = async (loginDetails, userDetail) => {
   }
   // Creating JWT and return to controller
   const data = {
-    id: userDetail.id,
-    emailId: userDetail.emailId,
+    id: userDetail[0].id,
+    emailId: userDetail[0].email_id,
   };
-  return jwt.sign(data, process.env.JWT_SECRET_KEY, { expiresIn: Number(process.env.JWT_EXPIRES_IN) });
+  return jwt.sign(data, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
 
 
 }

@@ -19,13 +19,20 @@ exports.jwtVerification = (req, res, next) => {
   // route. If Database has Roles also specified. Then 'admin' can access some routes which the 'user' can't.
   // Such as 'GET /problemCreate' route, ... etc.. admin privileged routes.
   //Create this LOGIC IF NEEDED> Otherwise, don't need to look at the claims in the decodedBody.
+  req.decodedBody = decodedBody; //Assign a property to req object.
   next();
 }
 
 exports.userHomeGet = (req, res) => {
-  res.sendFile('home.html', { root: path.join(__dirname, '../view') });
+  res.render('home', {
+    id: req.decodedBody.id,
+    emailId: req.decodedBody.emailId
+  })
 }
 
 exports.userProblemsetGet = (req, res) => {
-  res.sendFile('problemset.html', { root: path.join(__dirname, '../view') });
+  res.render('problemset', {
+    id: req.decodedBody.id,
+    emailId: req.decodedBody.emailId
+  })
 }
