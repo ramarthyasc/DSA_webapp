@@ -26,14 +26,22 @@ const SUBMISSION = [{}]
 
 ///////////////////////////////////////////////////////////////////
 
-app.set('views', ['./view', './view/miniCrud/']);
+app.set('views', [
+  path.join(__dirname, 'view'),
+  path.join(__dirname, 'view/miniCrud/'),
+  path.join(__dirname, 'assets')
+]);
+
 app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'view'), { index: false }));
+
+app.get('views').forEach(view => {
+  app.use(express.static(view, { index: false }))
+})
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()) //cookieParser() returns a middleware.
 
 app.get('/', (req, res) => {
-  res.send("<html><head><title>DSA Store</title></head><body><a href=\"/signup\">Signup</a></body></html>");
+  res.sendFile(path.join(__dirname, 'view/index.html'));
 });
 app.use('/admin', userbaseRouter); //Mini-CRUD app
 app.use('/signup', signupRouter);

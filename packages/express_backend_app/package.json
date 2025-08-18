@@ -1,5 +1,6 @@
 {
-  "name": "express-backend-app",
+  "name": "@drawcode_project/express_backend_app",
+  "private": true,
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -7,7 +8,6 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "argon2": "^0.43.1",
     "cookie-parser": "^1.4.7",

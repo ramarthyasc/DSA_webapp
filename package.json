@@ -1,0 +1,8 @@
+{
+  "name": "drawcode_project",
+  "private": true,
+  "workspaces": [
+    "packages/express_backend_app/",
+    "packages/react_frontend_app/"
+  ]
+}

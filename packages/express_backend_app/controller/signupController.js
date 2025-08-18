@@ -4,7 +4,7 @@ const { signupHashService, displayUserService, addUserService, validateAddUserSe
 const { listUser, addUser } = require("../model/queries.js");
 
 exports.userSignupGet = (req, res) => {
-  res.render('index', {
+  res.render('signup', {
     message: 'Sign in to enter the world of Algorithms',
   });
 }
@@ -19,7 +19,7 @@ exports.addUserPost = [
     const result = validationResult(req);
     if (!result.isEmpty()) {
       // Here, I didn't redirect, because, there is no perceived problem even if the person refreshes and resubmits the post request.
-      return res.status(400).render('index', {
+      return res.status(400).render('signup', {
         errors: result.array(),
         message: 'Welcome to the world of Algorithms',
       });

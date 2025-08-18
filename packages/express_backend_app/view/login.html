@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/loginStyle.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="login">
+      <h3>Login</h3>
+      <form action="/login" method="post">
+        <div>
+          <label for="emailId">Email ID:</label>
+          <input type="text" id="emailId" name="emailId">
+        </div>
+        <div>
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password">
+        </div>
+        <div>
+          <input type="checkbox" id="check" onclick="showPassword()">
+          <label for="check">Show password</label>
+        </div>
+        <div>
+          <button type="submit">Login</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <script>
+    function showPassword() {
+      const element = document.getElementById("password");
+      if (element.type === "password") {
+        element.type = "text";
+      } else {
+        element.type = "password";
+      }
+    }
+  </script>
+
+
+</body>
+
+</html>
