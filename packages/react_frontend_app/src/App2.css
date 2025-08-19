@@ -1,0 +1,17 @@
+th,
+td {
+  text-align: left;
+
+}
+
+table {
+  table-layout: fixed;
+  width: 50%;
+}
+
+table,
+td,
+th {
+  border: 1px solid black;
+  border-collapse: collapse;
+}

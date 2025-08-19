@@ -2,6 +2,7 @@ import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 // import './App.css'
+import './App2.css'
 
 const algogame1 = [
   {
@@ -41,26 +42,27 @@ function App() {
       <button onClick={() => setAlgogame(algogame => algogame1)}>1</button>
       <button onClick={() => { setAlgogame(algogame => algogame2) }}>2</button>
       <div>
-        <GamesList algogame={algogame} />
+        <table>
+          <tr>
+            <th id="width">Game</th>
+            <th>Difficulty</th>
+          </tr>
+          {algogame.map(gameDetail => <GamesList game={gameDetail.game} difficulty={gameDetail.difficulty} />)}
+        </table>
       </div>
     </div>
   )
 }
 
-function GamesList({ algogame }) {
+//a game description component
+function GamesList(props) {
+  const game = props.game;
+  const difficulty = props.difficulty;
   return (
-    <table>
-      {
-        algogame.map(content =>
-        (
-          <tr key={content.game}>
-            <td>{content.game}</td>
-            <td>{content.difficulty}</td>
-          </tr>
-        )
-        )
-      }
-    </table>
+    <tr key={game}>
+      <td>{game}</td>
+      <td>{difficulty}</td>
+    </tr>
   )
 }
 
