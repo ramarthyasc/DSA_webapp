@@ -10,6 +10,7 @@ const signupRouter = require('./routers/signupRouter');
 const userbaseRouter = require('./routers/userbaseRouter.js');
 const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
+const { gameDetailGet } = require('./controller/gameDetailController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -60,6 +61,8 @@ app.route('/login')
 //secure routes
 app.get('/home', jwtVerification, userHomeGet);
 app.get('/problemset', jwtVerification, userProblemsetGet);
+
+app.get('/algogame/:id', gameDetailGet);
 
 ///////////////////////////////////////////////////////////////////
 
