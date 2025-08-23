@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react'
 // import viteLogo from '/vite.svg'
 // import './App.css'
 import './App2.css'
-
-
+import Drawboard from './drawboard.jsx'
 
 
 
@@ -12,6 +11,8 @@ import './App2.css'
 function App() {
 
   const [algogame, setAlgogame] = useState([]);
+  //State for switching between pages
+  const [nextpage, setNextpage] = useState(0);
 
   // 2 Render pass happens here. useEffect is called after Rendering the null array as initial state. useEffect have set function called -
   // which queues the state change- due to which,
@@ -41,6 +42,33 @@ function App() {
 
   }, [])
 
+  //This handles the path for both the Parent (this component) and the child component respectively - look at the  History Stack -
+  //where the stack pointer moves whenever there is a history.pushState
+  useEffect(() => {
+
+    if (nextpage === 0) {
+      //push a path for this page and give a state property ie; 0 for this page ->  after Real DOM creation.
+      history.replaceState(nextpage, "", document.location.href);
+    } else if (nextpage === 1) {
+      history.pushState(nextpage, "", "/1");
+      console.log("Hello")
+    }
+
+
+    function handlePop(event) {
+      setNextpage(event.state);
+    }
+
+    //add the event handler function to registry. 
+    window.addEventListener("popstate", handlePop);
+
+    //cleanup function
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+    }
+
+  });
+
 
   //Handling the Click event.
   async function changeState(id) {
@@ -49,6 +77,20 @@ function App() {
 
     setAlgogame(algogame);
   }
+
+
+
+
+  if (nextpage === 1) {
+    return (
+      < Drawboard nextpage={nextpage} />
+    )
+  }
+
+  function handleTableClick() {
+    setNextpage(1);
+  }
+
 
   return (
     <div>
@@ -64,7 +106,7 @@ function App() {
           </thead>
           <tbody>
             {/* for each object in a list/array, we map it to a component(ie; an html integrated with the object). For each component, we give a key. */}
-            {algogame.map(gameDetail => <GameDetail key={gameDetail.game} game={gameDetail.game} difficulty={gameDetail.difficulty} />)}
+            {algogame.map(gameDetail => <GameDetail key={gameDetail.game} game={gameDetail.game} difficulty={gameDetail.difficulty} onClick={handleTableClick} />)}
           </tbody>
         </table>
       </div>
@@ -77,7 +119,7 @@ function GameDetail(props) {
   const game = props.game;
   const difficulty = props.difficulty;
   return (
-    <tr>
+    <tr onClick={props.onClick}>
       <td>{game}</td>
       <td>{difficulty}</td>
     </tr>
@@ -85,4 +127,4 @@ function GameDetail(props) {
 }
 
 
-export default App
+export default App;

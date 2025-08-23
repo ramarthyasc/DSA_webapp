@@ -9,7 +9,8 @@ export default defineConfig({
       '/algogame/1': 'http://localhost:5000',
       '/algogame/2': 'http://localhost:5000'
 
-    }
+    },
 
   }
+
 })
