@@ -6,8 +6,8 @@ function GameDetail(props) {
   const difficulty = props.difficulty;
   return (
     <tr>
-      <td><Link to="drawgame">{game}</Link></td>
-      <td><Link to="drawgame">{difficulty}</Link></td>
+      <td><Link to="drawboard">{game}</Link></td>
+      <td><Link to="drawboard">{difficulty}</Link></td>
     </tr>
   )
 }

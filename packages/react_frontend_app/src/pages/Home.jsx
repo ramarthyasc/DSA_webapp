@@ -13,7 +13,7 @@ function Home() {
   // which queues the state change- due to which,
   // the App function called again, causes 2nd render (In the 2nd pass of the function only, is the state changed).
   useEffect(() => {
-    const setNewData = async () => {
+    const newData = async () => {
       let res;
 
       try {
@@ -32,7 +32,7 @@ function Home() {
         console.log(`json error: ${err.message}`)
       }
     }
-    setNewData();
+    newData();
 
   }, [])
 
@@ -47,11 +47,11 @@ function Home() {
 
 
   return (
-    <div>
+    <div className='home'>
       <button onClick={() => changeState(1)}>1</button>
       <button onClick={() => changeState(2)}>2</button>
-      <div>
-        <table>
+      <div className='table-container'>
+        <table className='table'>
           <thead>
             <tr>
               <th id="width">Game</th>
