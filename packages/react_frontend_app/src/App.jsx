@@ -1,13 +1,12 @@
-import Home from './pages/Home.jsx';
-import Drawboard from './pages/drawboard.jsx';
 import { Outlet } from 'react-router-dom';
-
+import Navigate from './components/Navigate.jsx';
+import './styles/App.css'
 function App() {
   return (
-    <>
-      <nav>Navbar component here </nav>
+    <div className='app'>
+      <Navigate />
       <Outlet />
-    </>
+    </div>
   )
 }
 

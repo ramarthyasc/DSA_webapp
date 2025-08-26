@@ -1,0 +1,35 @@
+* {
+  outline: 1px solid red;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+@font-face {
+  font-family: Wild;
+  src: url('../assets/fonts/Wildyrus-E4gKe.ttf') format("truetype");
+}
+
+
+.home {
+  /* outline: 1px solid red; */
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-family: Wild;
+  height: 60vh;
+  justify-content: center;
+}
+
+.play {
+  margin-top: 5%;
+}
+
+button {
+  padding: 30px;
+  margin: 0px;
+  clip-path: polygon(0% 20%,
+      0% 80%,
+      30% 20%);
+  background-color: antiquewhite;
+}

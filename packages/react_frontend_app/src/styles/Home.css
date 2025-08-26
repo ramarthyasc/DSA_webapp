@@ -1,27 +1,50 @@
-th,
-td {
-  text-align: left;
-
+* {
+  /* outline: 1px solid red; */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-table {
-  table-layout: fixed;
-  width: 50%;
-}
+/* @font-face { */
+/*   font-family: Wild; */
+/*   src: url('../assets/fonts/Wildyrus-E4gKe.ttf') format("truetype"); */
+/* } */
 
-table,
-td,
-th {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
 
-.home,
-.table-container {
-  outline: 1px solid red;
+.home {
+  /* outline: 1px solid red; */
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  height: 60vh;
+  justify-content: center;
 }
 
-.table {
-  margin: 0 auto;
+.text h1 {
+  color: black;
+  font-size: 50px;
+}
+
+.text p {
+  margin-top: 10px;
+}
+
+.play {
+  margin-top: 5%;
+}
+
+button {
+  padding: 30px;
+  clip-path: polygon(4% 20%,
+      0% 80%,
+      30% 80%,
+      34% 100%,
+      100% 50%,
+      30% 0%,
+      30% 20%);
+  background: linear-gradient(to right, #FFD469, #f9a66c);
+  font-family: inherit;
+  font-size: 30px;
+  border: 0;
+
 }

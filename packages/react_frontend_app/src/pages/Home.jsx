@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/Home.css';
 import GameDetail from '../components/GameDetail';
+import { Link } from 'react-router-dom';
 
 
 
@@ -48,22 +49,16 @@ function Home() {
 
   return (
     <div className='home'>
-      <button onClick={() => changeState(1)}>1</button>
-      <button onClick={() => changeState(2)}>2</button>
-      <div className='table-container'>
-        <table className='table'>
-          <thead>
-            <tr>
-              <th id="width">Game</th>
-              <th>Difficulty</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* for each object in a list/array, we map it to a component(ie; an html integrated with the object). For each component, we give a key. */}
-            {algogame.map(gameDetail => <GameDetail key={gameDetail.game} game={gameDetail.game} difficulty={gameDetail.difficulty} />)}
-          </tbody>
-        </table>
+      <div className='text'>
+        <h1>Draw & Solve</h1>
+        <p>Solve algorithms with drawing pad, then code</p>
       </div>
+      <div className='play'>
+        <Link to="/drawboard">
+          <button >Play</button>
+        </Link>
+      </div>
+
     </div>
   )
 }
