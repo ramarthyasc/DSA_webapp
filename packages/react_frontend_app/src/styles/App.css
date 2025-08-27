@@ -1,10 +1,18 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+
 #root {
-  margin: 0 auto;
   height: 100vh;
   text-align: center;
-  background-color: #f9faf4;
   color: #4a6163;
   font-family: "Lacquer", system-ui;
   font-weight: 400;
   font-style: normal;
+  background-color: #f9faf4;
+
 }

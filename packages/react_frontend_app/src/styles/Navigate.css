@@ -1,10 +1,3 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-
-}
-
 /* @font-face { */
 /*   font-family: Wild; */
 /*   src: url('../assets/fonts/Wildyrus-E4gKe.ttf') format("truetype"); */
@@ -12,20 +5,24 @@
 
 .nav {
   display: flex;
+  position: relative;
   justify-content: right;
   background: linear-gradient(to right, #FFD469, #f9a66c);
+  clip-path: ellipse(69.48% 50% at 26.23% 50.00%);
+  height: 5vh;
 
 }
 
 
 ul {
   list-style-type: none;
-  margin-right: 15px;
   position: relative;
   animation: signin 2s infinite;
   animation-timing-function: linear;
-  margin-bottom: 10px;
-  margin-top: 10px;
+  padding-right: 15vw;
+  padding-bottom: 1.3vw;
+  padding-top: 1vh;
+  font-size: 2vw;
 }
 
 a:link,
@@ -35,7 +32,8 @@ a:visited {
 }
 
 a:hover {
-  color: gray
+  color: darkslategrey;
+  cursor: crosshair;
 }
 
 
