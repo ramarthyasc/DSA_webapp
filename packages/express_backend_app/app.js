@@ -62,7 +62,10 @@ app.route('/login')
 app.get('/home', jwtVerification, userHomeGet);
 app.get('/problemset', jwtVerification, userProblemsetGet);
 
+//REACT
 app.get('/algogame/:id', gameDetailGet);
+
+app.get('/auth-receiver', jwtCreatorGet);
 
 ///////////////////////////////////////////////////////////////////
 

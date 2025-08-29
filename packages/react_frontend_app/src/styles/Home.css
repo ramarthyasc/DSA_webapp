@@ -13,21 +13,26 @@
 
 .home {
   height: 95vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
-  padding-top: 17vh;
-  /* outline: 2px solid blue; */
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
+
 
 .text h1 {
   color: black;
-  font-size: 7vw;
+  font-size: 3vw;
 }
 
 .text p {
   padding-top: 2%;
-  font-size: 2vw;
+  font-size: 1vw;
 
 }
 
@@ -37,7 +42,7 @@
 
 
 button {
-  padding: 3vw;
+  padding: 2vw;
   clip-path: polygon(4% 20%,
       0% 80%,
       30% 80%,
@@ -47,7 +52,7 @@ button {
       30% 20%);
   background: linear-gradient(to right, #FFD469, #f9a66c);
   font-family: inherit;
-  font-size: 3vw;
+  font-size: 2vw;
   border: 0;
   position: relative;
   left: 0;
@@ -81,9 +86,28 @@ button:hover {
 }
 
 .design {
-  height: 40vh;
+  flex: 1;
   background: linear-gradient(to right, red, black);
-  clip-path: polygon(62.24% 25px, 70.85% 0.17%, 67.93% 19.48%, 28.68% 100%,
-      264px 96.91%);
+  clip-path: polygon(42.3% 34.77%, 0% 12.47%, 0% 100%, 1907px 100.00%, 54.29% 18.42%);
+}
 
+@media only screen and (max-width: 400px) {
+
+  .app .home {
+    height: 92vh;
+  }
+
+  .text p {
+    font-size: 3vw;
+  }
+
+  .text h1 {
+    font-size: 10vw;
+  }
+
+  button {
+    padding: 7vw;
+    font-size: 3vh;
+
+  }
 }
