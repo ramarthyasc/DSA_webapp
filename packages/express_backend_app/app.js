@@ -11,6 +11,7 @@ const userbaseRouter = require('./routers/userbaseRouter.js');
 const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 const { gameDetailGet } = require('./controller/gameDetailController.js');
+const { preflightOptions, jwtCreatorPost } = require('./controller/jwtCreatorController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -39,7 +40,8 @@ app.get('views').forEach(view => {
   app.use(express.static(view, { index: false }))
 })
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()) //cookieParser() returns a middleware.
+app.use(cookieParser()); //cookieParser() returns a middleware.
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'view/index.html'));
@@ -65,7 +67,8 @@ app.get('/problemset', jwtVerification, userProblemsetGet);
 //REACT
 app.get('/algogame/:id', gameDetailGet);
 
-app.get('/auth-receiver', jwtCreatorGet);
+app.options('/auth-receiver', preflightOptions);
+app.post('/auth-receiver', jwtCreatorPost);
 
 ///////////////////////////////////////////////////////////////////
 

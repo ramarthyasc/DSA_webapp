@@ -13,6 +13,12 @@
 
 }
 
+.nav .authorize {
+  padding-right: 20vw;
+  padding-top: 0.6vw;
+  padding-left: 1vw;
+}
+
 
 
 ul {
@@ -20,21 +26,10 @@ ul {
   position: relative;
   animation: signin 2s infinite;
   animation-timing-function: linear;
-  padding-right: 15vw;
   padding-top: 1.3vh;
   font-size: 1vw;
 }
 
-a:link,
-a:visited {
-  text-decoration: none;
-  color: black;
-}
-
-a:hover {
-  color: darkslategrey;
-  cursor: crosshair;
-}
 
 
 @keyframes signin {
@@ -55,7 +50,7 @@ a:hover {
 
 @media only screen and (max-width: 400px) {
   .nav {
-    clip-path: ellipse(69.48% 23.42% at 25.12% 22.03%);
+    clip-path: ellipse(69.48% 33.91% at 25.12% 22.03%);
     height: 8vh;
   }
 
@@ -64,5 +59,9 @@ a:hover {
     padding-top: 0.5vh;
   }
 
+  .nav .authorize {
+    padding-top: 1vw;
+    padding-left: 3vw;
+  }
 
 }
