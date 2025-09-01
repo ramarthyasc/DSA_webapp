@@ -1,5 +1,5 @@
 // Dependency inversion
-const { searchUser } = require('../model/queries.js');
+const { searchUser } = require('../model/testqueries.js');
 const path = require('path');
 const { verifyUser, verifyPassword } = require('../service/loginServices.js');
 
@@ -16,7 +16,9 @@ exports.userLoginAuthPost = async (req, res) => {
   try {
     userDetail = await verifyUser(loginDetails, searchUser);
   } catch (err) {
-    return res.status(500).send(err);
+    console.error(err);
+    return res.status(500).send("Internal Server Error");
+
   }
 
   if (userDetail.length === 0) {

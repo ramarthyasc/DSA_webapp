@@ -1,7 +1,7 @@
 const { body, validationResult } = require('express-validator');
 const { signupHashService, displayUserService, addUserService, validateAddUserService } = require('../service/signupServices.js');
 //Dependency Inversion
-const { listUser, addUser } = require("../model/queries.js");
+const { listUser, addUser } = require("../model/testqueries.js");
 
 exports.userSignupGet = (req, res) => {
   res.render('signup', {

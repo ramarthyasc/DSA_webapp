@@ -12,9 +12,15 @@ function Navigate() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credential: response.credential })
     })
-      .then(value => {
-        console.log(value);
-      }) // DO THINGS HEREEEEEE. to get the session state of the user(if the user was an existing one)
+      .then(res => {
+        console.log("Hello");
+        return res.json();
+      })
+      .then(user => {
+        console.log(user);
+      })
+
+    // DO THINGS HEREEEEEE. to get the session state of the user(if the user was an existing one)
   }
 
   useEffect(() => {

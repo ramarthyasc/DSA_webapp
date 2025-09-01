@@ -1,4 +1,4 @@
-const pool = require("./pool.js");
+const pool = require("./testpool.js");
 
 async function listUser() {
   const { rows } = await pool.query("SELECT * FROM user_details");
