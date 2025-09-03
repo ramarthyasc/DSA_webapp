@@ -1,59 +1,26 @@
 import '../styles/Navigate.css';
-import { useEffect, useId } from 'react';
+import Signin from './Signin.jsx';
+import { useEffect, useState } from 'react';
 
 function Navigate() {
 
-  const navId = useId();
+  // Check if the session has jwt. If no, then render Signin component.
+  // If yes, then access the route with the jwt to get new JWT, and render NAV bar with signin/ with profile pic.
+  const { isLoggedIn, setIsLoggedIn } = useState(false);
+  const { jsonWebToken, setJsonWebToken } = useState(null);
 
-  function handleCredentialResponse(response) {
-    console.log(response.credential);
-    fetch("http://localhost:5000/auth-receiver", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ credential: response.credential })
-    })
-      .then(res => {
-        console.log("Hello");
-        return res.json();
-      })
-      .then(user => {
-        console.log(user);
-      })
 
-    // DO THINGS HEREEEEEE. to get the session state of the user(if the user was an existing one)
+
+  let render;
+  if (!isLoggedIn) {
+    render = <Signin isloggedin={isLoggedIn} setisloggedin={setIsLoggedIn} jswonWebToken={jsonWebToken} setJsonWebToken={setJsonWebToken} />
+  } else {
+    render = <Userbar isloggedin={isLoggedIn} setisloggedin={setIsLoggedIn} />
   }
-
-  useEffect(() => {
-    google.accounts.id.initialize({
-      client_id: '945905776134-1scvn29a137jkdghbukadhe7jb4hmb9r.apps.googleusercontent.com',
-      ux_mode: "popup",
-      callback: handleCredentialResponse
-
-    });
-
-    google.accounts.id.renderButton(
-      document.getElementById(navId),
-      {
-        type: "icon",
-        size: "small",
-        shape: "circle",
-        theme: "filled_blue",
-      }
-
-    )
-
-
-  }, []);
-
   return (
     <div>
       <nav className='nav'>
-        <ul>
-          <li>Sign in</li>
-        </ul>
-        <div className='authorize'>
-          <div id={navId}></div>
-        </div>
+        {render}
       </nav>
     </div>
 
