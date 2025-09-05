@@ -6,12 +6,12 @@ const path = require('path');
 // a Verification service.
 exports.jwtVerification = (req, res, next) => {
   //Extract JWT from cookie first. Then verify it
-  const AuthJwt = req.cookies.auth_jwt;
+  const authJwt = req.cookies.auth_jwt;
   let decodedBody;
   try {
-    decodedBody = verifyUserJwt(AuthJwt); //If verification = success, then returns decodedBody. Otherwise, throws error.
+    decodedBody = verifyUserJwt(authJwt); //If verification = success, then returns decodedBody. Otherwise, throws error.
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
     return res.redirect('/login?error=bad_request');
   }
 

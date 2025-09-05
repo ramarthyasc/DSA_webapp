@@ -12,6 +12,7 @@ const { userLoginGet, userLoginAuthPost } = require('./controller/loginControlle
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 const { gameDetailGet } = require('./controller/gameDetailController.js');
 const { preflightOptions, googleJwtVerifyPost, jwtCreatorPost } = require('./controller/drawLoginController.js');
+const { secureRouteGet } = require('./controller/drawSecureRouteController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -69,6 +70,9 @@ app.get('/algogame/:id', gameDetailGet);
 
 app.options('/draw-login', preflightOptions);
 app.post('/draw-login', googleJwtVerifyPost, jwtCreatorPost);
+
+app.options('/draw-secure', preflightOptions);
+app.get('/draw-secure', secureRouteGet);
 
 ///////////////////////////////////////////////////////////////////
 
