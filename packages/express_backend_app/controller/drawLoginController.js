@@ -2,7 +2,7 @@ const { verifyOrAddUserService } = require('../service/drawVerifyOrAddUserServic
 const { verifyGoogleJWTService } = require('../service/drawVerifyGoogleJWTService.js');
 const { userAddReturn, searchUser, updatePicture } = require('../model/drawUsersQueries.js');
 const { jwtCreatorService } = require('../service/drawJwtCreatorService.js');
-const { refreshTokenGenerateService, saveRefreshTokenService } = require('../service/drawRefreshTokenService.js');
+const { refreshTokenGenerateService, addAndRevokeRTService } = require('../service/drawRefreshTokenService.js');
 const { addRefreshToken } = require('../model/drawRefresh_tokensQueries.js');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client();
@@ -48,7 +48,7 @@ exports.jwtCreatorPost = async (req, res) => {
   let refreshToken = refreshTokenGenerateService(crypto);
 
   //save refresh token in database with schema - id (primarykey, default = uuid), userid, token, expires_at, revoked (db default = false), rotated_from
-  refreshToken = await saveRefreshTokenService(addRefreshToken,
+  refreshToken = await addAndRevokeRTService(addRefreshToken,
     {
       userid: userDetail.userid,
       token: refreshToken,
@@ -59,7 +59,7 @@ exports.jwtCreatorPost = async (req, res) => {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24,
     secure: false, // As the localserver is not https. Change it to secure when in Production.
-    sameSite: "strict",
+    sameSite: "lax",
   });
 
   res.json({ accessToken });

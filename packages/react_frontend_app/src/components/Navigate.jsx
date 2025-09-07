@@ -13,7 +13,7 @@ function Navigate() {
 
   let render;
   if (!isLoggedIn) {
-    render = <Signin isloggedin={isLoggedIn} setisloggedin={setIsLoggedIn} jswonWebToken={jsonWebToken} setJsonWebToken={setJsonWebToken} />
+    render = <Signin setisloggedin={setIsLoggedIn} setJsonWebToken={setJsonWebToken} />
   } else {
     render = <Userbar isloggedin={isLoggedIn} setisloggedin={setIsLoggedIn} />
   }
