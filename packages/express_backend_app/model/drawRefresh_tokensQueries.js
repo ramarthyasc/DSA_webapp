@@ -1,12 +1,13 @@
 const pool = require('./drawpool.js');
 
 // refresh_tokens table schema : (\d+ refresh_tokens)
-// id UUID PRIMARY KEY DEFAULT gen_random_uuid(), userid TEXT UNIQUE, token TEXT UNIQUE, expires_at timestamptz, revoked boolean DEFAULT false, rotated_from uuid 
+// id UUID PRIMARY KEY DEFAULT gen_random_uuid(), userid TEXT UNIQUE, token TEXT UNIQUE, expires_at timestamptz, revoked boolean DEFAULT false,
+// rotated_from uuid, absolute_expires_at timestamptz
 
-async function addRefreshToken({ userid, token, expires_at, rotated_from }) {
+async function addRefreshToken({ userid, token, expires_at, rotated_from, absolute_expires_at }) {
 
-  const text = "INSERT INTO refresh_tokens (userid, token, expires_at, rotated_from) VALUES ($1, $2, $3, $4) RETURNING *";
-  const values = [userid, token, expires_at, rotated_from];
+  const text = "INSERT INTO refresh_tokens (userid, token, expires_at, rotated_from, absolute_expires_at) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+  const values = [userid, token, expires_at, rotated_from, absolute_expires_at];
   const res = await pool.query(text, values);
 
   return res.rows;

@@ -36,11 +36,12 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
     return res.status(500).send("Internal server error !");
   }
 
+  //userdetail : userid, name, email, picture
   req.userDetail = userDetail;
   next();
 }
 
-exports.jwtCreatorPost = async (req, res) => {
+exports.jwtRefreshTokenCreatorPost = async (req, res) => {
 
   const userDetail = req.userDetail;
   //create jwt using the userDetail
