@@ -1,5 +1,3 @@
-const { revokeOneOrAllRefreshTokens } = require("../model/drawRefresh_tokensQueries");
-
 exports.refreshTokenGenerateService = (crypto) => {
   const refreshToken = crypto.randomBytes(64).toString('hex');
   return refreshToken;
@@ -7,7 +5,7 @@ exports.refreshTokenGenerateService = (crypto) => {
 
 //add refresh token in database with schema - id (primarykey, default = uuid), userid, token, expires_at, revoked (db default = false), rotated_from
 exports.addAndRevokeRTService = async (addRefreshToken, { userid, token, expiresIn = 24, rotated_from, absoluteExpiresIn = 7 },
-  revokeOneOrAllRefreshTokens = async () => { },
+  revokeRefreshToken = async () => { },
   detailRefreshToken = null) => {
 
   const expires_at = new Date(Date.now() + expiresIn * 60 * 60 * 1000); //24 hours = Relative Expiry
@@ -16,10 +14,10 @@ exports.addAndRevokeRTService = async (addRefreshToken, { userid, token, expires
 
   // Create Refresh tokens which are not the First one of the Chain for a user
   if (rotated_from) {
-    await revokeOneOrAllRefreshTokens(detailRefreshToken, false); //revoke previous RT of user 
+    await revokeRefreshToken(detailRefreshToken); //revoke previous RT of user 
 
     // create new RT with the same absolute expiry time as the previous RT
-    const detailRefreshToken = await addRefreshToken({
+    detailRefreshToken = await addRefreshToken({
       userid, token, expires_at, rotated_from,
       absolute_expires_at: detailRefreshToken.absolute_expires_at
     });
@@ -30,37 +28,47 @@ exports.addAndRevokeRTService = async (addRefreshToken, { userid, token, expires
   }
 
   // Create the First Refresh token of the chain (where rotated_from = null) where absolute_expires_at is set
-  const detailRefreshToken = await addRefreshToken({ userid, token, expires_at, rotated_from, absolute_expires_at });
+  detailRefreshToken = await addRefreshToken({ userid, token, expires_at, rotated_from, absolute_expires_at });
   const refreshToken = detailRefreshToken[0].token;
 
   return refreshToken;
 }
 
 
-exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, revokeOneOrAllRefreshTokens) => {
+exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, revokeRefreshToken) => {
 
   //Check Validity
-  const detailRefreshToken = searchRefreshToken(token);
+  const detailRefreshToken = await searchRefreshToken(token);
+
+  if (!detailRefreshToken.length) {
+    // A Different RT is being supplied, so return
+    return;
+  }
+
   const isRevokedRefreshToken = detailRefreshToken[0].revoked
+  if (isRevokedRefreshToken) {
+    //RT is invalid (revoked) = Replay attack
+    return;
+  }
 
   //Check Expiry
   const now = new Date();
   const expires_at = new Date(detailRefreshToken[0].expires_at);
   const absolute_expires_at = new Date(detailRefreshToken[0].absolute_expires_at);
 
-  if (!detailRefreshToken.length || isRevokedRefreshToken || now > expires_at || now > absolute_expires_at) {
-    // RT is invalid (different or revoked) or expired. ie; REPLAY ATTACK
+  if (now > expires_at || now > absolute_expires_at) {
+    //Expired. ie; REPLAY ATTACK
 
-    // true => Revoke all refresh tokens of the user ie; Logout the user from all browsers. Even the hacker. So that he 
+    // true => Revoke refresh token of the user ie; Logout the user/hacker from the browser. So that he 
     // have to create new Refresh token from start - from the entry point ie; Signin through google.
-    await revokeOneOrAllRefreshTokens(detailRefreshToken[0], true)
+    await revokeRefreshToken(detailRefreshToken[0])
 
-    console.log(`Revoked all Refresh tokens of the user`);
+    console.log(`Revoked current browser's Refresh tokens of the user/hacker`);
     return;
 
-  } else { // RT is valid
-
-    return detailRefreshToken[0];
-
   }
+
+  // As the thread reached here, RT is valid
+
+  return detailRefreshToken[0];
 }

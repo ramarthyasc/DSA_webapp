@@ -23,28 +23,18 @@ async function searchRefreshToken(token) {
   return rows;
 }
 
-async function revokeOneOrAllRefreshTokens(detailRefreshToken, isRevokeUser = false) {
+async function revokeRefreshToken(detailRefreshToken) {
 
-  if (isRevokeUser) {
-    // Revoke all active Refresh tokens of the user. So that he/she will be logged out of all browser softwares.
-    const text = "UPDATE refresh_tokens SET revoked = true WHERE userid = $1 AND revoked = false";
-    const values = [detailRefreshToken.userid];
-    const res = await pool.query(text, values);
-    console.log(`Revoked all active Refresh tokens of user: ${userid}. ie; User logged out of all browsers.`);
-    console.log(`Updated ${res.rowCount} row/s`)
-
-  } else {
-    const text = "UPDATE refresh_tokens SET revoked = true WHERE token = $1";
-    const values = [detailRefreshToken.token];
-    const res = await pool.query(text, values);
-    console.log(`Revoked one active Refresh token of user: ${userid}. ie; User logged out of one browser.`);
-    console.log(`Updated ${res.rowCount} row. Should only update one row.`)
-  }
+  const text = "UPDATE refresh_tokens SET revoked = true WHERE token = $1";
+  const values = [detailRefreshToken.token];
+  const res = await pool.query(text, values);
+  console.log(`Revoked one active Refresh token of user: ${userid}. ie; User logged out of one browser.`);
+  console.log(`Updated ${res.rowCount} row. Should only update one row.`)
 }
 
 
 module.exports = {
   addRefreshToken,
   searchRefreshToken,
-  revokeOneOrAllRefreshTokens
+  revokeRefreshToken,
 }

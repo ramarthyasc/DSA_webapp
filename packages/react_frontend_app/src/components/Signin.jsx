@@ -1,6 +1,6 @@
 import { useEffect, useId } from 'react';
 
-function Signin({ setIsLoggedIn, setJsonWebToken }) {
+function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
   const navId = useId();
 
   async function handleCredentialResponse(response) {
@@ -9,7 +9,8 @@ function Signin({ setIsLoggedIn, setJsonWebToken }) {
     const loginRes = await fetch("/draw-login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ credential: response.credential })
+      credentials: "include",
+      body: JSON.stringify({ credential: response.credential }),
     })
 
     let res;
@@ -23,7 +24,8 @@ function Signin({ setIsLoggedIn, setJsonWebToken }) {
       // Get request to Secure route using JWT
       res = await fetch("/draw-secure", {
         method: "GET",
-        headers: { Authorization: `Bearer ${jwt}` }
+        headers: { Authorization: `Bearer ${jwt}` },
+        credentials: "include",
       })
     } else {
       console.log("HTTP Status: ", loginRes.status);
@@ -33,14 +35,15 @@ function Signin({ setIsLoggedIn, setJsonWebToken }) {
 
     if (res.ok) {
 
-      const { accessToken: newJwt } = await res.json();
-      console.log(`New Jwt is here : ${newJwt}`);
-      setJsonWebToken(newJwt);
+      const { accessToken, userDetail } = await res.json();
+      console.log(`Access Token : ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
+      setJsonWebToken(accessToken);
       setIsLoggedIn(true);
+      setUser(userDetail);
 
 
     } else { //If a hacker is doing Replay attack, then we won't get anything from server, and gets status 400. We
-      // will set isLoggedIn as False - to logout of this browser. Here in this function, we won't do anything as its appropriate.
+      // will set isLoggedIn as False - to logout of this browser. Here in this function, we won't do anything as setLoggedIn is currently false
       console.log("HTTP Status: ", res.status);
       console.log("Status Text: ", res.statusText);
       return;
@@ -49,7 +52,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken }) {
 
 
 
-
+  // 'Mine' Effect
   useEffect(() => {
     google.accounts.id.initialize({
       client_id: '945905776134-1scvn29a137jkdghbukadhe7jb4hmb9r.apps.googleusercontent.com',

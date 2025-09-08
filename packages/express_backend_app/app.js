@@ -12,7 +12,8 @@ const { userLoginGet, userLoginAuthPost } = require('./controller/loginControlle
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 const { gameDetailGet } = require('./controller/gameDetailController.js');
 const { preflightOptions, googleJwtVerifyPost, jwtRefreshTokenCreatorPost } = require('./controller/drawLoginController.js');
-const { secureRouteGet } = require('./controller/drawSecureRouteController.js');
+const { rotatingRefreshTokenAndJwt } = require('./controller/drawRotRefreshTokenController.js');
+const { secureRouteGet } = require('./controller/drawSecureRouteController.js')
 
 const USERS = [];
 const QUESTIONS = [{
@@ -72,7 +73,8 @@ app.options('/draw-login', preflightOptions);
 app.post('/draw-login', googleJwtVerifyPost, jwtRefreshTokenCreatorPost);
 
 app.options('/draw-secure', preflightOptions);
-app.get('/draw-secure', secureRouteGet);
+app.get('/draw-secure', rotatingRefreshTokenAndJwt, secureRouteGet);
+//Can use the rotatingRefreshTokenAndJwt controller for any website which needs Rotating Refresh token system
 
 ///////////////////////////////////////////////////////////////////
 

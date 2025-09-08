@@ -13,6 +13,7 @@ exports.preflightOptions = (req, res) => {
   res.set('Access-Control-Allow-Origin', 'http://localhost:5173');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Credentials', 'true');
   res.sendStatus(200);
 }
 
@@ -25,7 +26,7 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
     userPayload = await verifyGoogleJWTService(client, token);
   } catch (err) {
     console.error(err);
-    return res.status(400).send(`User Error`);
+    return res.sendStatus(400);
   }
 
   let userDetail;
@@ -33,7 +34,7 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
     userDetail = await verifyOrAddUserService(userPayload, searchUser, userAddReturn, updatePicture); //arguments give
   } catch (err) {
     console.error(err);
-    return res.status(500).send("Internal server error !");
+    return res.sendStatus(500);
   }
 
   //userdetail : userid, name, email, picture
