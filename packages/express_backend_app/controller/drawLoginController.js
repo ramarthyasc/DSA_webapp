@@ -9,20 +9,13 @@ const client = new OAuth2Client();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
-exports.preflightOptions = (req, res) => {
-  res.set('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.set('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
-}
 
 exports.googleJwtVerifyPost = async (req, res, next) => {
-  res.set('Access-Control-Allow-Origin', 'http://localhost:5173');
 
   const token = req.body.credential;
   let userPayload;
   try {
+    // userPayload is the jwt payload from Google authorization library : Check Google authorization for webapp -look at Credentials.
     userPayload = await verifyGoogleJWTService(client, token);
   } catch (err) {
     console.error(err);

@@ -5,6 +5,7 @@ const { jwtVerifierService } = require('../service/drawJwtVerifierService.js');
 const { jwtCreatorService } = require('../service/drawJwtCreatorService.js');
 const { searchRefreshToken, revokeRefreshToken, addRefreshToken } = require('../model/drawRefresh_tokensQueries.js');
 const { verifyValidityExpiryRevokeRTService, refreshTokenGenerateService, addAndRevokeRTService } = require('../service/drawRefreshTokenService.js');
+const { searchUser } = require('../model/drawUsersQueries.js');
 const crypto = require('crypto');
 
 
@@ -16,10 +17,12 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
   // If cookie was deleted in the browser manually or after cookie expiry, and then the user refreshed the page , 
   // then refreshToken above = undefined. Handle it below: ie; Logout the user even if they have a Valid JWT with them - simplicity & secure.
-  // The Refresh token which is deleted but still active in the Database will get expired and the chain will get expired after Abs.exp. time
-  // of that token.
+  // When manually deleted the Cookie, 
+  // The Refresh token which is deleted from the browser but still active in the Database will get expired and the RT chain will get expired after 
+  // Abs.exp. time of that token. Here, then the user and the hacker gets logged out, and need to signin to get an RT without Rotated_from 
+  // (ie; Fresh chain of RTs with a new Abs.expiry time from now on)
   if (!refreshToken) {
-    return res.sendStatus(400); //Set isLogin as False for this status code at Frontend (React)
+    return res.json({ error: "NO_REFRESH_TOKEN" }); //Set isLogin as False for this status code at Frontend (React)
   }
 
 
@@ -32,7 +35,8 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
   const detailRefreshToken = await verifyValidityExpiryRevokeRTService(refreshToken, searchRefreshToken, revokeRefreshToken);
 
   if (!detailRefreshToken) { // HACKED if Refresh token is different or is a revoked token or is Expired token. 
-    // Refresh token revoked if incoming Refresh token is Expired (ie; Any of Expired combos or Revoked combos or Different RT are filtered out
+    // Refresh token revoked if incoming Refresh token is Expired(When RT is expired, it would have been deleted along with the expired cookie.
+    // But the hacker got hold to the Expired RT, and send it to us)(ie; Any of Expired combos or Revoked combos or Different RT are filtered out
     // = Revoked-expired, Revoked-nonExpired, Expired-NonRevoked, Different RT)
     // THESE CAN'T BE IN ANY WAY DONE BY USERS. BUT ONLY BY HACKERSS.
     return res.sendStatus(400); // logout from the current browser by setting isLogin false in the React by using this Status code.
@@ -45,9 +49,10 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
     let jsonWebToken;
     if (header && header.startsWith('Bearer')) {
-      //If there is Authorization header -
+      //If there is Authorization header ie; JWT is being send-
       jsonWebToken = header.split(" ")[1];
     } else {
+      // There is no JWT being send
       jsonWebToken = null;
     }
 
@@ -57,29 +62,40 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
     //I have to use refresh token to create new jwt, then use that new jwt to access the secure route by sending it to server  to 
     //verfiy it, and then create new jwt using Refresh token, and send it back to frontend. Thus i use jwt to move through secure route (login page), and here 
     //i also would have to do 2 requests here.
+    //Or you can just go with the Response that i give here (One jwt & UserDetail)
+    //that the server sends to the client. Then use it to get User Details,and JWT ofcourse. SIMPLE, FAST, SAFE
     //
     //Remember : Jwt is a token and is the one who lets you through secure routes. Refesh token is the one who lets you create new Jwts.
-    // jwtCreatorService(jwt,)
+
+    if (!jsonWebToken) { // If there is no JWT, Create new one (Only if Refresh token is Valid & Non Expired- that we verified above)
+      const fakeUserPayload = { sub: detailRefreshToken.userid };
+      const [userDetail] = await searchUser(fakeUserPayload);
+      console.log(`userDetail1: ${JSON.stringify(userDetail)}`);
+
+      const accessToken = jwtCreatorService(jwt, userDetail);
+
+      res.locals.userDetail = userDetail;
+      res.locals.accessToken = accessToken;
+      return next();
+    }
 
 
-    try { //jwt is Valid & not expired
+    try { //jwt Exists, is Valid & not expired
 
       //           Create new JWT only (Don't create new RT - to prevent waste of DB processing)
 
 
       // The Below line may jump to the Catch
       const payload = jwtVerifierService(jwt, jsonWebToken);
-      console.log(`payload = ${payload}`);
       //payload may have expirytime and iat properties. Check it. We don't need it
       const { iat, exp, ...userDetail } = payload;
-      console.log(`userDetail = ${userDetail}`);
+      console.log(`userDetail2: ${JSON.stringify(userDetail)}`);
 
       const accessToken = jwtCreatorService(jwt, userDetail);
 
       //for Use in the next middleware
       res.locals.accessToken = accessToken;
       res.locals.userDetail = userDetail;
-      console.log(`Access token : ${accessToken}, userDetail: ${userDetail}`)
       return next() //res.json({ accessToken });
 
 
@@ -94,9 +110,8 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
         //ignoreExpiration = true
         const payload = jwtVerifierService(jwt, jsonWebToken, true);
-        console.log(`payload = ${payload}`);
         const { iat, exp, ...userDetail } = payload;
-        console.log(`userDetail = ${userDetail}`);
+        console.log(`userDetail3: ${JSON.stringify(userDetail)}`);
 
         const accessToken = jwtCreatorService(jwt, userDetail);
 

@@ -11,9 +11,10 @@ const userbaseRouter = require('./routers/userbaseRouter.js');
 const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 const { gameDetailGet } = require('./controller/gameDetailController.js');
-const { preflightOptions, googleJwtVerifyPost, jwtRefreshTokenCreatorPost } = require('./controller/drawLoginController.js');
+const { googleJwtVerifyPost, jwtRefreshTokenCreatorPost } = require('./controller/drawLoginController.js');
 const { rotatingRefreshTokenAndJwt } = require('./controller/drawRotRefreshTokenController.js');
 const { secureRouteGet } = require('./controller/drawSecureRouteController.js')
+const { preflightOptionsSetter, corsAllowResponseSetter } = require('./controller/drawCorsController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -29,6 +30,10 @@ const SUBMISSION = [{}]
 
 
 ///////////////////////////////////////////////////////////////////
+//DrawLogin App
+
+
+//DrawLogin App
 
 app.set('views', [
   path.join(__dirname, 'view'),
@@ -66,16 +71,17 @@ app.route('/login')
 app.get('/home', jwtVerification, userHomeGet);
 app.get('/problemset', jwtVerification, userProblemsetGet);
 
-//REACT
+//DrawLogin App
+
 app.get('/algogame/:id', gameDetailGet);
 
-app.options('/draw-login', preflightOptions);
-app.post('/draw-login', googleJwtVerifyPost, jwtRefreshTokenCreatorPost);
-
-app.options('/draw-secure', preflightOptions);
-app.get('/draw-secure', rotatingRefreshTokenAndJwt, secureRouteGet);
+app.options('/*splat', preflightOptionsSetter);
+app.post('/draw-login', corsAllowResponseSetter, googleJwtVerifyPost, jwtRefreshTokenCreatorPost);
+app.get('/draw-secure', corsAllowResponseSetter, rotatingRefreshTokenAndJwt, secureRouteGet);
 //Can use the rotatingRefreshTokenAndJwt controller for any website which needs Rotating Refresh token system
 
+
+//DrawLogin App
 ///////////////////////////////////////////////////////////////////
 
 app.listen(port, () => {

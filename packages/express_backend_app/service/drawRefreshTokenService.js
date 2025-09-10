@@ -59,7 +59,7 @@ exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, 
   if (now > expires_at || now > absolute_expires_at) {
     //Expired. ie; REPLAY ATTACK
 
-    // true => Revoke refresh token of the user ie; Logout the user/hacker from the browser. So that he 
+    // Revoke refresh token of the user ie; Logout the user/hacker from the browser. So that he 
     // have to create new Refresh token from start - from the entry point ie; Signin through google.
     await revokeRefreshToken(detailRefreshToken[0])
 

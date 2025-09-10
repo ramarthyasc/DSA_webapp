@@ -1,19 +1,9 @@
 import '../styles/Navigate.css';
 import Signin from './Signin.jsx';
 import Userin from './Userin.jsx';
-import { useEffect, useState } from 'react';
 
-function Navigate() {
+function Navigate({ setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser, user }) {
 
-  // Check if the session has jwt. If no, then render Signin component.
-  // If yes, then access the route with the jwt to get new JWT, and render NAV bar with signin/ with profile pic.
-
-  // Helper State : 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [jsonWebToken, setJsonWebToken] = useState(null);
-
-  // Display State : 
-  const [user, setUser] = useState(null);
 
 
   let render;
@@ -23,6 +13,8 @@ function Navigate() {
     render = <Userin setIsLoggedIn={setIsLoggedIn} user={user} />
   }
   return (
+
+
     <div>
       <nav className='nav'>
         {render}

@@ -7,7 +7,7 @@ const routes = [
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <Home /> }, //index: true - means it takes the same path as parent App component
       { path: "drawboard", element: <Drawboard /> },
     ]
   },
