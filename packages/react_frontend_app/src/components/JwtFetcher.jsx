@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 
-// For When you Refresh your page
+// Used for When you Refresh your page (If there is Valid refresh token, then generate new JWT from server. If no Valid RT, then don't give access)
 function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser }) {
 
-  // Helper state
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetcher() {
@@ -19,8 +17,9 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
         let data;
         try {
           data = await res.json();
-        } catch (err) {//If the server send using sendStatus(400), then error occurs above as it can't parse statuscode to json.
-          //res.ok == false. But it doesn't send any body.
+        } catch (err) {//If the server send using sendStatus(500) - due to any errors in the server,
+          // then error occurs above as it can't parse statuscode to json.
+          //res.ok == false. But it only sends status code in Text format -which res.json can't parse. So error occurs.
           console.log("HTTP Status: ", res.status);
           console.log("Status Text: ", res.statusText);
           return; // Stop the function here
@@ -28,7 +27,7 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
 
         if (res.ok) {
 
-          const { accessToken, userDetail, error } = data;
+          const { accessToken, userDetail, rtError } = data;
 
           if (accessToken && userDetail) {
             console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
@@ -37,14 +36,14 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
             setIsLoggedIn(true);
             setUser(userDetail);
           }
-          if (error === "NO_REFRESH_TOKEN") {
+          if (rtError) {
 
-            setError(error);
+            // typically rtError = "NO_REFRESH_TOKEN". If rtError = "INVALID_REFRESH_TOKEN", 
+            // then Hacker is attempting or I refreshed the page after signing out.
+            // When Signing out, I revoke the RT, but the cookie containing that RT is still there.
+            console.log(`Refresh token error: ${rtError}`);
           }
 
-
-        } else {
-          console.log(`error: ${error}`);
 
         }
       }
@@ -57,14 +56,12 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
   }, [])
 
 
-  if (!isLoggedIn && error !== "NO_REFRESH_TOKEN") {
-    //Render this first in Real DOM, then run useEfects - which schedule state change. Then rerun the component. Now return Children
-    // The main render we need. This all happens fast that you won't see the "Loading" text.
-    return "Loading...";
-  }
+  // We set the if else logic of letting the user in or not - inside the Component itself (using isLoggedIn) - so that
+  // I don't clutter this JwtFetcher component - which is for handling REFRESHES only- Good practice for me.
 
-  //When state changes, render this.
-  return <>{children}</>;
+
+  return <>{children}</>;   //Render this first in Real DOM, then runs useEfects (only 1 time) - which schedule state change. Then reruns the component.
+  // which gives the The main render we need. This all happens fast that you won't see the initial Children (typically, we use "loading.." text) page.
 
 }
 

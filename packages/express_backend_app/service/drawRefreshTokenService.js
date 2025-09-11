@@ -12,9 +12,9 @@ exports.addAndRevokeRTService = async (addRefreshToken, { userid, token, expires
   const absolute_expires_at = new Date(Date.now() + absoluteExpiresIn * 24 * 60 * 60 * 1000); //7 days from now = Absolute expiry for all RTs
 
 
-  // Create Refresh tokens which are not the First one of the Chain for a user
+  // Create Refresh tokens which are not the First one of the Chain for a user's browser
   if (rotated_from) {
-    await revokeRefreshToken(detailRefreshToken); //revoke previous RT of user 
+    await revokeRefreshToken(detailRefreshToken); //revoke previous RT of user's browser 
 
     // create new RT with the same absolute expiry time as the previous RT
     detailRefreshToken = await addRefreshToken({

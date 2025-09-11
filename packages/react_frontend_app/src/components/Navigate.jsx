@@ -10,7 +10,7 @@ function Navigate({ setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser, user })
   if (!isLoggedIn) {
     render = <Signin setIsLoggedIn={setIsLoggedIn} setJsonWebToken={setJsonWebToken} setUser={setUser} />
   } else {
-    render = <Userin setIsLoggedIn={setIsLoggedIn} user={user} />
+    render = <Userin setIsLoggedIn={setIsLoggedIn} setJsonWebToken={setJsonWebToken} setUser={setUser} user={user} />
   }
   return (
 

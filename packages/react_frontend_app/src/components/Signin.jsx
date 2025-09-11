@@ -1,4 +1,5 @@
 import { useEffect, useId } from 'react';
+import '../styles/Signin.css';
 
 function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
   const navId = useId();
@@ -76,7 +77,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
 
   return (
     <>
-      <ul>
+      <ul className='signin'>
         <li>Sign in</li>
       </ul>
       <div className='authorize'>

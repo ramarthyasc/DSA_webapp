@@ -88,10 +88,10 @@ button:hover {
 .design {
   flex: 1;
   background: linear-gradient(to right, red, black);
-  clip-path: polygon(42.3% 34.77%, 0% 12.47%, 0% 100%, 1907px 100.00%, 54.29% 18.42%);
+  clip-path: polygon(42.3% 34.77%, 0% 12.47%, 0% 100%, 100% 100%, 100% 39.17%, 55.12% 17.09%);
 }
 
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 430px) {
 
   .app .home {
     height: 92vh;

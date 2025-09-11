@@ -25,10 +25,10 @@ async function searchRefreshToken(token) {
 
 async function revokeRefreshToken(detailRefreshToken) {
 
-  const text = "UPDATE refresh_tokens SET revoked = true WHERE token = $1";
+  const text = "UPDATE refresh_tokens SET revoked = true WHERE token = $1 RETURNING *";
   const values = [detailRefreshToken.token];
   const res = await pool.query(text, values);
-  console.log(`Revoked one active Refresh token of user: ${userid}. ie; User logged out of one browser.`);
+  console.log(`Revoked one active Refresh token of user: ${res.rows[0].userid}. ie; User logged out of one browser.`);
   console.log(`Updated ${res.rowCount} row. Should only update one row.`)
 }
 

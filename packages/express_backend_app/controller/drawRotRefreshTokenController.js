@@ -12,6 +12,7 @@ const crypto = require('crypto');
 exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
 
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
 
   const refreshToken = req.cookies.refreshToken;
 
@@ -22,7 +23,7 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
   // Abs.exp. time of that token. Here, then the user and the hacker gets logged out, and need to signin to get an RT without Rotated_from 
   // (ie; Fresh chain of RTs with a new Abs.expiry time from now on)
   if (!refreshToken) {
-    return res.json({ error: "NO_REFRESH_TOKEN" }); //Set isLogin as False for this status code at Frontend (React)
+    return res.json({ rtError: "NO_REFRESH_TOKEN" }); //Set isLogin as False for this json at Frontend (React)
   }
 
 
@@ -39,12 +40,22 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
     // But the hacker got hold to the Expired RT, and send it to us)(ie; Any of Expired combos or Revoked combos or Different RT are filtered out
     // = Revoked-expired, Revoked-nonExpired, Expired-NonRevoked, Different RT)
     // THESE CAN'T BE IN ANY WAY DONE BY USERS. BUT ONLY BY HACKERSS.
-    return res.sendStatus(400); // logout from the current browser by setting isLogin false in the React by using this Status code.
+    return res.json({ rtError: "INVALID_REFRESH_TOKEN" }); // logout from the current browser or Not give access by setting isLogin false in the React by using this json 
 
   } else {
     // Refresh token is Valid(non Revoked) and non Expired (Only combo of Refresh token existing after the deletion of combos above)
 
-    //header
+    //Revoke Refresh Token when User manually Signsout : 
+    const reqbody = req.body;
+    if (reqbody && reqbody.revokeRefreshToken) {
+      await revokeRefreshToken(detailRefreshToken)
+      return res.json({ rtError: "REFRESH_TOKEN_IS_REVOKED_BY_SERVER" });
+    }
+
+
+    // JWT 
+
+    //Header containing JWT
     const header = req.get('Authorization');
 
     let jsonWebToken;
@@ -70,7 +81,6 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
     if (!jsonWebToken) { // If there is no JWT, Create new one (Only if Refresh token is Valid & Non Expired- that we verified above)
       const fakeUserPayload = { sub: detailRefreshToken.userid };
       const [userDetail] = await searchUser(fakeUserPayload);
-      console.log(`userDetail1: ${JSON.stringify(userDetail)}`);
 
       const accessToken = jwtCreatorService(jwt, userDetail);
 
