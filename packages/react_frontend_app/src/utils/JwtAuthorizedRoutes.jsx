@@ -35,10 +35,10 @@ function JwtAuthorizedRoutes() {
   // if there was no refresh token send to server (as due to expiry) - then server sends rtError.
   // if there was an invalid (revoked/expired/different) refresh token send to server (Hacker) - then server sends a different valued rtError.
   useEffect(() => {
+    console.log(isLoggedIn);
 
     if (isLoggedIn && !jwtIsVerified) {
 
-      console.log("Helo")
       async function jwtVerify() {
         const res = await fetch("/draw-secure", {
           method: "GET",
@@ -52,9 +52,10 @@ function JwtAuthorizedRoutes() {
         let data;
         try {
           data = await res.json();
-        } catch (err) { // res.ok == false
+        } catch (err) { // res.ok == false - unknown HTTP ERROR (We will see "loading..." here) If any, then we have to fix it. Not a developer designed error from server.
           console.log("HTTP Status: ", res.status);
           console.log("Status Text: ", res.statusText);
+          return;
 
         }
 
@@ -63,7 +64,7 @@ function JwtAuthorizedRoutes() {
 
           if (accessToken && userDetail) {
 
-            console.log("JWT is regenerated")
+            console.log("JWT is verified and regenerated")
             console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
 
 
@@ -99,7 +100,9 @@ function JwtAuthorizedRoutes() {
 
   });
 
+  //NOTE: DYNAMIC RENDERS ARE RETURNED HERE & useEffects have Await in it> So this component's useEffects have to run here itself.
 
+  // For isLoggedIn === false, the useEffects won't run, so you can return the DYNAMIC RENDER directly.
   // if it is isLoggedIn==false (Through JwtFetcher), then: Your navbar doesn't show userprofile. Here you can roam freely b/w pages.
   if (!isLoggedIn) {
     return (
@@ -110,11 +113,11 @@ function JwtAuthorizedRoutes() {
 
   // when user tries to enter any of the Outlet's paths, then this JwtAuthorizedRoutes() function will run again and verify with JWT - to let the
   // user pass through or not - to the required path.
-  return (
 
-    //Give user data for this util's children
-    isLoggedIn && jwtIsVerified ? <Outlet context={user} /> : "loading..."
-  );
+  if (isLoggedIn) {
+    if (jwtIsVerified) return <Outlet context={user} />
+    return "loading";
+  }
 
 
 }
