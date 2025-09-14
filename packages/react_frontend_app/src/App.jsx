@@ -1,8 +1,9 @@
 import { Outlet } from 'react-router-dom';
-import Navigate from './components/Navigate.jsx';
-import JwtFetcher from './components/JwtFetcher.jsx';
+import Navbar from './components/Navbar.jsx';
+import JwtFetcher from './utils/JwtFetcher.jsx';
 import './styles/App.css'
 import { useState } from 'react';
+
 function App() {
 
   // Check if the session has jwt. If no, then render Signin component.
@@ -19,10 +20,11 @@ function App() {
 
 
   return (
-    <JwtFetcher setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} setJsonWebToken={setJsonWebToken} setUser={setUser}>
+    <JwtFetcher setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} jsonWebToken={jsonWebToken} setJsonWebToken={setJsonWebToken} setUser={setUser}>
       <div className='app'>
-        <Navigate setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} setJsonWebToken={setJsonWebToken} setUser={setUser} user={user} />
-        <Outlet />
+        <Navbar setIsLoggedIn={setIsLoggedIn} isLoggedIn={isLoggedIn} setJsonWebToken={setJsonWebToken} setUser={setUser} user={user} />
+        {/* Outlet is Authorization Protected only if isLoggedIn == true (That we did in JwtFetcher). Otherwise, you are free to explore both pages. */}
+        <Outlet context={[isLoggedIn, setIsLoggedIn, jsonWebToken, setJsonWebToken, setUser, user]} />
         {/* In the Outlet, we have Pages : Home & drawboard */}
       </div>
     </JwtFetcher>

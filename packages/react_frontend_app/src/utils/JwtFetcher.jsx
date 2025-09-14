@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // Used for When you Refresh your page (If there is Valid refresh token, then generate new JWT from server. If no Valid RT, then don't give access)
-function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser }) {
+function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJsonWebToken, setUser }) {
 
 
   useEffect(() => {
@@ -35,6 +35,7 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
             setJsonWebToken(accessToken);
             setIsLoggedIn(true);
             setUser(userDetail);
+
           }
           if (rtError) {
 
@@ -59,8 +60,16 @@ function JwtFetcher({ children, jsonWebToken, setIsLoggedIn, isLoggedIn, setJson
   // We set the if else logic of letting the user in or not - inside the Component itself (using isLoggedIn) - so that
   // I don't clutter this JwtFetcher component - which is for handling REFRESHES only- Good practice for me.
 
+  // if (!isLoggedIn) {
+  //   return <>{children}</>
+  // }
 
-  return <>{children}</>;   //Render this first in Real DOM, then runs useEfects (only 1 time) - which schedule state change. Then reruns the component.
+
+
+
+  return (
+    <>{children}</>
+  );   //Render this first in Real DOM, then runs useEfects (only 1 time) - which schedule state change. Then reruns the component.
   // which gives the The main render we need. This all happens fast that you won't see the initial Children (typically, we use "loading.." text) page.
 
 }

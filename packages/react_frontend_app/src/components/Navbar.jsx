@@ -1,8 +1,8 @@
-import '../styles/Navigate.css';
+import '../styles/Navbar.css';
 import Signin from './Signin.jsx';
 import Userin from './Userin.jsx';
 
-function Navigate({ setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser, user }) {
+function Navbar({ setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser, user }) {
 
 
 
@@ -24,4 +24,4 @@ function Navigate({ setIsLoggedIn, isLoggedIn, setJsonWebToken, setUser, user })
   )
 }
 
-export default Navigate;
+export default Navbar;

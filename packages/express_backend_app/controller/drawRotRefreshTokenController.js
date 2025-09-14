@@ -156,7 +156,8 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
         // THESE CAN'T BE IN ANY WAY DONE BY USERS. BUT ONLY BY HACKERSS.
 
         await revokeRefreshToken(detailRefreshToken);
-        return res.sendStatus(400); //Logout from the browser from which request was send
+
+        return res.json({ jwtError: "INVALID_JWT" }); //Logout from the browser from which request was send
       }
     }
 
