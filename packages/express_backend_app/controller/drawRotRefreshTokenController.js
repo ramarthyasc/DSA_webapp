@@ -99,7 +99,7 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
       const payload = jwtVerifierService(jwt, jsonWebToken);
       //payload may have expirytime and iat properties. Check it. We don't need it
       const { iat, exp, ...userDetail } = payload;
-      console.log(`userDetail2: ${JSON.stringify(userDetail)}`);
+      //console.log(`userDetail2: ${JSON.stringify(userDetail)}`);
 
       const accessToken = jwtCreatorService(jwt, userDetail);
 
@@ -121,7 +121,7 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
         //ignoreExpiration = true
         const payload = jwtVerifierService(jwt, jsonWebToken, true);
         const { iat, exp, ...userDetail } = payload;
-        console.log(`userDetail3: ${JSON.stringify(userDetail)}`);
+        //console.log(`userDetail3: ${JSON.stringify(userDetail)}`);
 
         const accessToken = jwtCreatorService(jwt, userDetail);
 

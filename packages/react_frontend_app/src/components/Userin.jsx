@@ -1,10 +1,13 @@
 import '../styles/Userin.css';
+import { useContext } from 'react';
+import { ErrorContext } from '../context/ErrorContext';
 
 
-async function signout({ setIsLoggedIn, setJsonWebToken, setUser }) {
+async function signout({ setIsLoggedIn, setJsonWebToken, setUser, setError }) {
   setIsLoggedIn(false);
   setJsonWebToken(null);
   setUser(null);
+  setError(true); // state from JwtFetcher util component
 
   //Revoke refresh token
   const res = await fetch('/draw-secure', {
@@ -41,6 +44,7 @@ async function signout({ setIsLoggedIn, setJsonWebToken, setUser }) {
 
 
 function Userin({ setIsLoggedIn, setJsonWebToken, setUser, user }) {
+  const setError = useContext(ErrorContext);
 
   return (
 
@@ -48,9 +52,9 @@ function Userin({ setIsLoggedIn, setJsonWebToken, setUser, user }) {
       <ul className='user'>
         <li className='name'>{user.name}</li>
         <li className='dropdown'>
-          <img src={user.picture} alt="profile-picture" className='profile-pic' />
+          <img src={user.picture} alt="pic" className='profile-pic' />
           <ul className='profile-menu'>
-            <li onClick={() => { signout({ setIsLoggedIn, setJsonWebToken, setUser }) }}>Signout</li>
+            <li onClick={() => { signout({ setIsLoggedIn, setJsonWebToken, setUser, setError }) }}>Signout</li>
           </ul>
         </li>
       </ul>

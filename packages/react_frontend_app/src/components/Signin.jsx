@@ -5,7 +5,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
   const navId = useId();
 
   async function handleCredentialResponse(response) {
-    console.log(response.credential);
+    //console.log(response.credential);
 
     const loginRes = await fetch("/draw-login", {
       method: "POST",
@@ -20,7 +20,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
       // instead of using : setState, then giving a fake await to rerender the parent component and set the state, then giving that state to the fetch
       // function.
       const { accessToken: jwt } = await loginRes.json();
-      console.log(jwt);
+      //console.log(jwt);
 
       // Get request to Secure route using JWT
       res = await fetch("/draw-secure", {
@@ -37,7 +37,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
     if (res.ok) {
 
       const { accessToken, userDetail } = await res.json();
-      console.log(`Access Token : ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
+      //console.log(`Access Token : ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
       setJsonWebToken(accessToken);
       setIsLoggedIn(true);
       setUser(userDetail);

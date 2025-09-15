@@ -25,7 +25,7 @@ function JwtAuthorizedRoutes() {
   // Only after useLayoutEffect finishes does the browser actually paint the screen.
   // And then only is useEffect run.
   useLayoutEffect(() => {
-    setJwtIsVerified(false)
+    setJwtIsVerified(false);
   }, [location.pathname]);
 
 
@@ -35,7 +35,6 @@ function JwtAuthorizedRoutes() {
   // if there was no refresh token send to server (as due to expiry) - then server sends rtError.
   // if there was an invalid (revoked/expired/different) refresh token send to server (Hacker) - then server sends a different valued rtError.
   useEffect(() => {
-    console.log(isLoggedIn);
 
     if (isLoggedIn && !jwtIsVerified) {
 
@@ -64,13 +63,15 @@ function JwtAuthorizedRoutes() {
 
           if (accessToken && userDetail) {
 
-            console.log("JWT is verified and regenerated")
-            console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
+            console.log("JWT is verified before going to a secure route, and regenerated from the server")
+            //console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
 
 
             setJsonWebToken(accessToken);
+            setIsLoggedIn(true);
+            setUser(userDetail);
             setJwtIsVerified(true);
-            // user and isloggedIn is already set by jwtfetcher top wrapper itself.
+            // user and isloggedIn is already set by jwtfetcher top wrapper itself. So doesn't matter if give it or not. But good pattern to give it.
 
           }
           if (jwtError || rtError) { // if jwtError is there, then the RT is revoked in the server itself. (Look at the Backend api)

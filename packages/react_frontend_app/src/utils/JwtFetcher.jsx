@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { ErrorContext } from '../context/ErrorContext';
 
 // Used for When you Refresh your page (If there is Valid refresh token, then generate new JWT from server. If no Valid RT, then don't give access)
 function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJsonWebToken, setUser }) {
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
+
 
   useEffect(() => {
     async function fetcher() {
@@ -33,7 +35,8 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
           const { accessToken, userDetail, rtError } = data;
 
           if (accessToken && userDetail) {
-            console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
+            //console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
+            console.log("Jwt is generated after page refresh using Refresh Token");
 
             setJsonWebToken(accessToken);
             setIsLoggedIn(true);
@@ -80,8 +83,9 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
   //Runs this only if we refreshed the page 
 
   //Note here
-  //NOTE: (Refresh page flow)
-  if (!jsonWebToken) {
+  // When there is no jsonWebToken, then it is always noLogged in as they always go together.
+  //NOTE: (Refresh page flow and Signout page flow)
+  if (!isLoggedIn) {
     if (error === true) return <>{children}</>  // Only return DYNAMIC RENDERS (render the Children) only after
     //we made sure that useEffects is run fully in here itself.
     return "...loading"; // block the flow to the children - so that useEffect runs here. (useEffects are prevented from compounding & running last
@@ -90,11 +94,15 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
 
 
 
-  // Return children after we made sure that useEffects ran here itself. Here, it returns if isLoggedIn is true or false NOTE: (In Normal flow)
+  // Return children after we made sure that useEffects ran here itself. Here, it returns if isLoggedIn is true NOTE: (In Normal flow)
   return (
-    <>{children}</>
-  );   //Render this first in Real DOM, then runs useEfects (only 1 time) - which schedule state change. Then reruns the component.
-  // which gives the The main render we need. This all happens fast that you won't see the initial Children (typically, we use "loading.." text) page.
+
+    <ErrorContext.Provider value={setError}>
+      <>{children}</>
+    </ErrorContext.Provider>
+    //Render this first in Real DOM, then runs useEfects (only 1 time) - which schedule state change. Then reruns the component.
+    // which gives the The main render we need. This all happens fast that you won't see the initial Children (typically, we use "loading.." text) page.
+  )
 
 }
 
