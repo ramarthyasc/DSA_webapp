@@ -43,7 +43,7 @@ function JwtAuthorizedRoutes() {
           method: "GET",
           credentials: "include",
           headers: {
-            "Authorization": `Bearer ${jsonWebToken}`
+            "Authorization": `Bearer 1234`
           }
 
         })
@@ -63,7 +63,7 @@ function JwtAuthorizedRoutes() {
 
           if (accessToken && userDetail) {
 
-            console.log("JWT is verified before going to a secure route, and regenerated from the server")
+            console.log("JWT is verified & regenerated from the server before going to a secure route")
             //console.log(`Access Token: ${accessToken}, User Detail: ${JSON.stringify(userDetail)}`);
 
 
