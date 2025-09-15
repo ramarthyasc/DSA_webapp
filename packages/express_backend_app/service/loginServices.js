@@ -21,6 +21,7 @@ exports.verifyPassword = async (loginDetails, userDetail) => {
     id: userDetail[0].id,
     emailId: userDetail[0].email_id,
   };
+  //process.env. is always a string. jsonWebToken module takes string and take it as millisecond
   return jwt.sign(data, process.env.JWT_SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN });
 
 

@@ -4,12 +4,13 @@ exports.refreshTokenGenerateService = (crypto) => {
 }
 
 //add refresh token in database with schema - id (primarykey, default = uuid), userid, token, expires_at, revoked (db default = false), rotated_from
-exports.addAndRevokeRTService = async (addRefreshToken, { userid, token, expiresIn = 24, rotated_from, absoluteExpiresIn = 7 },
+exports.addAndRevokeRTService = async (addRefreshToken, { userid, token,
+  expiresIn = process.env.RT_EXPIRES_IN, rotated_from, absoluteExpiresIn = process.env.RT_ABSOLUTE_EXPIRES_IN },
   revokeRefreshToken = async () => { },
   detailRefreshToken = null) => {
 
-  const expires_at = new Date(Date.now() + expiresIn * 60 * 60 * 1000); //24 hours = Relative Expiry
-  const absolute_expires_at = new Date(Date.now() + absoluteExpiresIn * 24 * 60 * 60 * 1000); //7 days from now = Absolute expiry for all RTs
+  const expires_at = new Date(Date.now() + Number(expiresIn)); //24 hours = Relative Expiry
+  const absolute_expires_at = new Date(Date.now() + Number(absoluteExpiresIn)); //7 days from now = Absolute expiry for all RTs
 
 
   // Create Refresh tokens which are not the First one of the Chain for a user's browser
@@ -63,7 +64,14 @@ exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, 
     // have to create new Refresh token from start - from the entry point ie; Signin through google.
     await revokeRefreshToken(detailRefreshToken[0])
 
-    console.log(`Revoked current browser's Refresh tokens of the user/hacker`);
+
+    if (now > expires_at) {
+      console.log(`Revoked user's or hacker's current browser Refresh token by Relative Expiry`);
+
+    }
+    if (now > absolute_expires_at) {
+      console.log(`Revoked user's or hacker's current browser Refresh token by ABSOLUTE Expiry`);
+    }
     return;
 
   }

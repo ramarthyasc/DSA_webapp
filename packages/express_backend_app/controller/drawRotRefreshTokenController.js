@@ -12,7 +12,7 @@ const crypto = require('crypto');
 exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
 
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  // console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
 
   const refreshToken = req.cookies.refreshToken;
 
@@ -140,11 +140,13 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
           secure: false, // As the localserver is not https. Change it to secure when in Production.
           sameSite: "lax",
         });
+        console.log("As JWT is Expired, New JWT and New Refresh Token generated");
 
         //for Use in the next middleware
         res.locals.accessToken = accessToken;
         res.locals.userDetail = userDetail;
         return next() //res.json({ accessToken });
+
 
 
 
