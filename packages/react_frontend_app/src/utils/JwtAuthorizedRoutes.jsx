@@ -43,7 +43,7 @@ function JwtAuthorizedRoutes() {
           method: "GET",
           credentials: "include",
           headers: {
-            "Authorization": `Bearer 1234`
+            "Authorization": `Bearer ${jsonWebToken}`
           }
 
         })
