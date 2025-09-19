@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useOutletContext } from 'react-router-dom';
-
+import { Canvas } from '../components/Canvas';
+import { Question } from '../components/Question';
+import '../styles/Drawboard.css';
 
 function Drawboard() {
   const user = useOutletContext();
@@ -8,8 +10,11 @@ function Drawboard() {
 
   return (
     <>
-      <h1>Welcome to Algogame {user && `${user.name}`}</h1>
       <Link to='/'>Home</Link>
+      <div className='space'>
+        <Question />
+        <Canvas />
+      </div>
     </>
 
 

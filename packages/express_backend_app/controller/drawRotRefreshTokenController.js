@@ -136,7 +136,7 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
 
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 24,
+          maxAge: process.env.RT_EXPIRES_IN,
           secure: false, // As the localserver is not https. Change it to secure when in Production.
           sameSite: "lax",
         });

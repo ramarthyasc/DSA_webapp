@@ -1,5 +1,5 @@
 import Home from './pages/Home.jsx'
-import Drawboard from './pages/drawboard.jsx';
+import Drawboard from './pages/Drawboard.jsx';
 import App from './App.jsx'
 import JwtAuthorizedRoutes from './utils/JwtAuthorizedRoutes.jsx';
 

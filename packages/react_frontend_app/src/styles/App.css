@@ -16,3 +16,9 @@ body {
   background-color: #f9faf4;
 
 }
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}

@@ -56,7 +56,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
   // 'Mine' Effect
   useEffect(() => {
     google.accounts.id.initialize({
-      client_id: '945905776134-1scvn29a137jkdghbukadhe7jb4hmb9r.apps.googleusercontent.com',
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       ux_mode: "popup",
       callback: handleCredentialResponse
     });
