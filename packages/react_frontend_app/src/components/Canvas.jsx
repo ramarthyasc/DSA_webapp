@@ -9,31 +9,65 @@ export const Canvas = props => {
   const [isDrawing, setIsDrawing] = useState(false);
 
 
-  const startDrawing = ({ nativeEvent }) => {
+  const startDrawing = ({ offsetX, offsetY }) => {
     //native event is the event of DOM
-    const { offsetX, offsetY } = nativeEvent;
     contextRef.current.beginPath();
     contextRef.current.moveTo(offsetX, offsetY)
-    setIsDrawing(true);
   }
 
-  const endDrawing = () => {
-    setIsDrawing(false);
-  }
 
-  const draw = (nativeEvent) => {
+  const draw = ({ offsetX, offsetY }) => {
     if (!isDrawing) return;
 
-    const { offsetX, offsetY } = nativeEvent;
     contextRef.current.lineTo(offsetX, offsetY);
     contextRef.current.stroke();
   }
 
-  const handleMouseMove = ({ nativeEvent }) => {
-    draw(nativeEvent);
 
-    // when you move your mouse over a certain region (where your button will be located), then your button or that region should change color.
-    // create that button - which when clicked upon (OnMouseClick in that region), then it should clear the canvas.
+  const clearCanvas = (rect) => {
+    contextRef.current.clearRect(0, 0, rect.width, rect.height);
+    buttonRender(rect, { textcolor: "white" });
+  }
+
+  const handleMouseMove = ({ nativeEvent }) => {
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const { offsetX, offsetY } = nativeEvent;
+    if (offsetX >= rect.width / 2 && offsetX <= rect.width / 2 + 30 && offsetY >= 10 && offsetY <= 40) {
+      buttonRender(rect, { textcolor: "white" });
+      setIsDrawing(false);
+    } else {
+      buttonRender(rect);
+      draw({ offsetX, offsetY });
+    }
+
+  }
+
+  const handleMouseDown = ({ nativeEvent }) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const { offsetX, offsetY } = nativeEvent;
+    if (offsetX >= rect.width / 2 && offsetX <= rect.width / 2 + 30 && offsetY >= 10 && offsetY <= 40) {
+      clearCanvas(rect);
+    } else {
+      startDrawing({ offsetX, offsetY });
+      setIsDrawing(true);
+    }
+  }
+
+  const handleMouseUp = ({ nativeEvent }) => {
+    setIsDrawing(false);
+  }
+
+  const buttonRender = (rect, { bgcolor = "lightgrey", textcolor = "black" } = {}) => {
+    //draw a Poof! rectangle
+    contextRef.current.fillStyle = `${bgcolor}`;
+    contextRef.current.fillRect(rect.width / 2, 10, 30, 30);
+
+    contextRef.current.font = "20px Georgia";
+    contextRef.current.textBaseline = "middle";
+    contextRef.current.textAlign = "center";
+    contextRef.current.fillStyle = textcolor;
+    contextRef.current.fillText("X", rect.width / 2 + 15, 25);
 
   }
 
@@ -48,17 +82,23 @@ export const Canvas = props => {
     // This gives the pixel density of the canvas
     canvas.width = Math.floor(rect.width * scale);
     canvas.height = Math.floor(rect.height * scale);
+
+    // When we draw anything in the context, it scales it realtime
     ctx.scale(scale, scale);
 
 
     // setting the context to ContextRef
     contextRef.current = ctx;
 
+    // Buttons
+    buttonRender(rect);
 
 
 
   }, [])
 
+
   // onMouseMove is a mine
-  return <canvas ref={canvasRef} {...props} onMouseDown={startDrawing} onMouseUp={endDrawing} onMouseMove={handleMouseMove} />
+  return <canvas ref={canvasRef} {...props} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
+  />
 }
