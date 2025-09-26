@@ -1,106 +1,31 @@
 import '../styles/Canvas.css';
 import { useRef } from 'react';
 import { useEffect } from 'react';
-
-
+import { setDrawProps, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton }
+  from '../services/canvasService.js';
 export const Canvas = props => {
   const canvasRef = useRef();
   const contextRef = useRef();
+
+  //whichShapeRef helps isDrawingRef identify which shape to draw when i click and hold on the canvas
+  /// by default, pencil is true
+  const whichShapeRef = useRef({ pencil: true, rectangle: false, circle: false, line: false });
+  //isDrawingRef is for allowing to draw any shapes on the canvas - this is general for all shapes
   const isDrawingRef = useRef(false);
+
   const buttonIsWhiteRef = useRef(false);
   const mouseDownCoordRef = useRef({});
+  const shapesRef = useRef({ x: "x", rectangle: "rectangle", circle: "circle", line: "line", pencil: "pencil", color: "color" });
+  const buttonCoordRef = useRef({
+    rectangle: { x0: 0, x1: 30, y0: 0, y1: 30 },
+    circle: { x0: 32, x1: 62, y0: 0, y1: 30 }, line: { x0: 64, x1: 94, y0: 0, y1: 30 }, pencil: { x0: 96, x1: 126, y0: 0, y1: 30 },
+    color: { x0: 128, x1: 158, y0: 0, y1: 30 },
+  })
 
+  // Drawing helpers : 
+  const rectInitialCoordRef = useRef({});
+  const imgDataRef = useRef(null);
 
-  const startDrawing = (ctx, { offsetX, offsetY }) => {
-    //native event is the event of DOM
-    ctx.beginPath();
-    ctx.lineWidth = 4;
-    ctx.moveTo(offsetX, offsetY)
-  }
-
-
-  const draw = (ctx, { offsetX, offsetY }) => {
-
-    ctx.lineTo(offsetX, offsetY);
-    ctx.stroke();
-  }
-  const drawDot = (ctx, { offsetX, offsetY }) => {
-    ctx.fillRect(offsetX, offsetY, 2, 2);
-  }
-
-  const clearCanvas = (ctx, rect) => {
-    ctx.clearRect(158, 0, rect.width - 188, 30);
-    ctx.clearRect(0, 30, rect.width, rect.height - 30);
-  }
-
-  const isInsideButtonRegion = ({ x0, x1, y0, y1 }, { offsetX, offsetY }) => {
-    if (offsetX >= x0 && offsetX <= x1 && offsetY >= y0 && offsetY <= y1) {
-      return true;
-    }
-    return false;
-  }
-
-  const buttonFinder = (mouseCoord, rect, isInsideButtonRegion) => {
-
-    switch (true) {
-      case isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "x";
-
-      case isInsideButtonRegion({ x0: 0, x1: 30, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "rectangle";
-
-      case isInsideButtonRegion({ x0: 32, x1: 62, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "circle";
-
-      case isInsideButtonRegion({ x0: 64, x1: 94, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "line";
-
-      case isInsideButtonRegion({ x0: 96, x1: 126, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "pencil";
-
-      case isInsideButtonRegion({ x0: 128, x1: 158, y0: 0, y1: 30 },
-        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY }):
-        return "color";
-
-      default:
-        return null;
-    }
-
-
-  }
-
-  const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegion) => {
-    switch (buttonName) {
-      case "x":
-        return !isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-
-      case "rectangle":
-        return !isInsideButtonRegion({ x0: 0, x1: 30, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-
-      case "circle":
-        return !isInsideButtonRegion({ x0: 32, x1: 62, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-
-      case "line":
-        return !isInsideButtonRegion({ x0: 64, x1: 94, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-
-      case "pencil":
-        return !isInsideButtonRegion({ x0: 96, x1: 126, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-
-      case "color":
-        return !isInsideButtonRegion({ x0: 128, x1: 158, y0: 0, y1: 30 },
-          { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
-    }
-  }
 
   const handleMouseMove = ({ nativeEvent }) => {
 
@@ -111,23 +36,54 @@ export const Canvas = props => {
       || isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY })) {
 
       isDrawingRef.current = false;
-      const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
-      if (!prevMouseDownButton) return;
-      const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
-      if (isOutsidePrevMouseDownButton) {
-        buttonRender(contextRef.current, rect, { shape: prevMouseDownButton });
-        buttonIsWhiteRef.current = false;
+
+      if (buttonIsWhiteRef.current) {
+        const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
+        if (!prevMouseDownButton) return;
+        const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
+        if (isOutsidePrevMouseDownButton) {
+          buttonRender(contextRef.current, rect, { shape: prevMouseDownButton });
+          buttonIsWhiteRef.current = false;
+        }
       }
 
     } else {
       //when i hold a button and slide out of that to the canvas
       if (buttonIsWhiteRef.current) {
         buttonRender(contextRef.current, rect, { shape: "all" });
+        /// color the active shape (in whichShapeRef) to darkgrey
+        Object.keys(whichShapeRef.current).forEach((key) => {
+          if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: key }) }
+        })
         buttonIsWhiteRef.current = false;
       }
 
 
-      if (isDrawingRef.current) draw(contextRef.current, { offsetX, offsetY });
+      // Drawing of shapes on the Canvas : (The continuation from OnMouseDown)
+      //
+      if (isDrawingRef.current) {
+
+        if (whichShapeRef.current.pencil) { /// by default, pencil is true
+          /// for pencil === true
+          drawPencil(contextRef.current, { offsetX, offsetY });
+        }
+
+        if (whichShapeRef.current.rectangle) {
+          /// for rectangle === true
+          clearCanvas(contextRef.current, rect);
+          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          drawRectangle(contextRef.current, rect, { offsetX, offsetY }, rectInitialCoordRef.current, clearCanvas);
+        }
+
+        //
+        //
+        //
+        //Other shapes to be implemented
+        //
+        //
+
+      }
+
 
     }
 
@@ -140,38 +96,50 @@ export const Canvas = props => {
 
     if (nativeEvent.button !== 0) return;
 
-    if (isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      // X button
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "x" });
-      buttonIsWhiteRef.current = true;
+    // button highlighting: start
+    for (let shape in shapesRef.current) {
+      if (isInsideButtonRegion({
+        x0: buttonCoordRef.current[shape].x0, x1: buttonCoordRef.current[shape].x1,
+        y0: buttonCoordRef.current[shape].y0, y1: buttonCoordRef.current[shape].y1
+      }, { offsetX, offsetY })) {
 
-    } else if (isInsideButtonRegion({ x0: 0, x1: 30, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      // button bar in the top left
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "rectangle" });
-      buttonIsWhiteRef.current = true;
-
-    } else if (isInsideButtonRegion({ x0: 32, x1: 62, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "circle" });
-      buttonIsWhiteRef.current = true;
-
-    } else if (isInsideButtonRegion({ x0: 64, x1: 94, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "line" });
-      buttonIsWhiteRef.current = true;
-
-    } else if (isInsideButtonRegion({ x0: 96, x1: 126, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "pencil" });
-      buttonIsWhiteRef.current = true;
-
-    } else if (isInsideButtonRegion({ x0: 128, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      buttonRender(contextRef.current, rect, { textcolor: "white", shape: "color" });
-      buttonIsWhiteRef.current = true;
-
-    } else {
-      drawDot(contextRef.current, { offsetX, offsetY });
-      startDrawing(contextRef.current, { offsetX, offsetY });
-      isDrawingRef.current = true;
+        buttonRender(contextRef.current, rect, { textcolor: "white", shape: shape });
+        buttonIsWhiteRef.current = true;
+        return;
+      }
     }
 
+
+    // Initiating the Drawing on drawable canvas when clicking on the drawable canvas
+
+    /// Set properties before drawing
+    setDrawProps(contextRef.current, { lineWidth: 4 });
+    ///
+
+    if (whichShapeRef.current.pencil) {
+      /// if pencil is selected
+      drawDot(contextRef.current, { offsetX, offsetY });
+      startPencilDraw(contextRef.current, { offsetX, offsetY });
+    }
+
+    if (whichShapeRef.current.rectangle) {
+      /// if rectangle is selected
+
+      /// screenshotting the canvas before drawing the rectangle
+      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
+      /// Saving the clicked coordinates
+      rectInitialCoordRef.current = { x: offsetX, y: offsetY };
+
+    }
+
+    //
+    //
+    // Other shapes to be implemented
+    //
+    //
+    //
+
+    isDrawingRef.current = true; // entry point for any shape drawing on canvas
 
   }
 
@@ -180,138 +148,70 @@ export const Canvas = props => {
     const rect = canvasRef.current.getBoundingClientRect();
     const { offsetX, offsetY } = nativeEvent;
 
-    if (isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        //ie; if the onMouseUp is done without leaving the button after onMouseDown on that button
-        clearCanvas(contextRef.current, rect);
-        buttonRender(contextRef.current, rect, { shape: "x" });
-        buttonIsWhiteRef.current = false;
-      }
-    } else if (isInsideButtonRegion({ x0: 0, x1: 30, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        buttonRender(contextRef.current, rect, { shape: "rectangle" });
-        buttonIsWhiteRef.current = false;
-      }
-    } else if (isInsideButtonRegion({ x0: 32, x1: 62, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        buttonRender(contextRef.current, rect, { shape: "circle" });
-        buttonIsWhiteRef.current = false;
-      }
-    } else if (isInsideButtonRegion({ x0: 64, x1: 94, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        buttonRender(contextRef.current, rect, { shape: "line" });
-        buttonIsWhiteRef.current = false;
-      }
-    } else if (isInsideButtonRegion({ x0: 96, x1: 126, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        buttonRender(contextRef.current, rect, { shape: "pencil" });
-        buttonIsWhiteRef.current = false;
-      }
-    } else if (isInsideButtonRegion({ x0: 128, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      if (buttonIsWhiteRef.current) {
-        buttonRender(contextRef.current, rect, { shape: "x" });
-        buttonIsWhiteRef.current = false;
+    for (let shape in shapesRef.current) {
+
+      if (isInsideButtonRegion({
+        x0: buttonCoordRef.current[shape].x0, x1: buttonCoordRef.current[shape].x1,
+        y0: buttonCoordRef.current[shape].y0, y1: buttonCoordRef.current[shape].y1
+      }, { offsetX, offsetY })) {
+        if (buttonIsWhiteRef.current) {
+          //ie; if the onMouseUp is done on the button without leaving the button after onMouseDown on that button (ie; Button is White on mouseup)
+
+          if (shape === "x") {
+            clearCanvas(contextRef.current, rect);
+          }
+
+          buttonRender(contextRef.current, rect, { shape: shape });
+          buttonIsWhiteRef.current = false;
+
+          // Setting state on what is to be drawn
+
+          if (shape === "rectangle") {
+            whichShapeRef.current.rectangle = true; //setting state : rectangle is selected to be drawn now on
+            Object.keys(whichShapeRef.current).forEach((key) => {
+              whichShapeRef.current[key] = (key === shape); // turning all others false except the shape rectangle
+            })
+            /// Changing background color of shape's button when selected
+            buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: shape })
+            ///
+          } else if (shape === "pencil") {
+            whichShapeRef.current.pencil = true;
+            Object.keys(whichShapeRef.current).forEach((key) => {
+              whichShapeRef.current[key] = (key === shape);
+            })
+            /// Changing background color of shape's button when selected
+            buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: shape })
+            ///
+          }
+          //
+          //
+          // other shapes to be implemented
+          //
+          //
+
+          return;
+        }
       }
     }
 
 
-    isDrawingRef.current = false;
 
+    isDrawingRef.current = false;
   }
 
   const handleMouseLeave = ({ nativeEvent }) => {
 
     const rect = canvasRef.current.getBoundingClientRect();
     const { offsetX, offsetY } = nativeEvent;
-    //When mouse leaves the canvas element, isDrawingRef.current = false
+    //When mouse leaves the canvas element, isDrawingRef = false
     isDrawingRef.current = false;
-    buttonRender(contextRef.current, rect, { shape: "all" });
-  }
 
-
-  const buttonRender = (ctx, rect, { bgcolor = "lightgrey", textcolor = "black", color = "black", shape = "all" } = {}) => {
-    ctx.fillStyle = `${bgcolor}`;
-
-    if (shape === "rectangle" || shape === "all") {
-      ctx.clearRect(0, 0, 30, 30);
-      ctx.fillRect(0, 0, 30, 30);
-
-      ctx.save(); // To not get affected by lineWidth set in startDrawing function
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = `${textcolor}`;
-      ctx.strokeRect(5, 5, 20, 20);
-      ctx.restore();
-
-    }
-    if (shape === "circle" || shape === "all") {
-      ctx.clearRect(32, 0, 30, 30);
-      ctx.fillRect(32, 0, 30, 30);
-
-      ctx.save(); // To not get affected by lineWidth set in startDrawing function
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = `${textcolor}`;
-      ctx.beginPath();
-      ctx.arc(47, 15, 10, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.restore();
-
-    }
-    if (shape === "line" || shape === "all") {
-      ctx.clearRect(64, 0, 30, 30);
-      ctx.fillRect(64, 0, 30, 30);
-
-      ctx.save(); // To not get affected by lineWidth set in startDrawing function
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = `${textcolor}`;
-      ctx.beginPath();
-      ctx.moveTo(69, 5);
-      ctx.lineTo(89, 25);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.restore();
-
-    }
-    if (shape === "pencil" || shape === "all") {
-      ctx.clearRect(96, 0, 30, 30);
-      ctx.fillRect(96, 0, 30, 30);
-
-      ctx.save(); // To not get affected by lineWidth set in startDrawing function
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = `${textcolor}`;
-      ctx.beginPath();
-      ctx.moveTo(101, 13);
-      ctx.lineTo(117, 13);
-      ctx.lineTo(121, 15);
-      ctx.lineTo(117, 17);
-      ctx.lineTo(101, 17);
-      ctx.lineTo(101, 13);
-
-      ctx.moveTo(104, 13);
-      ctx.lineTo(104, 17);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.restore();
-
-    }
-    if (shape === "color" || shape === "all") {
-      ctx.clearRect(128, 0, 30, 30);
-      ctx.fillRect(128, 0, 30, 30);
-      ctx.fillStyle = `${color}`;
-      ctx.fillRect(133, 5, 20, 20);
-
-    }
-    if (shape === "x" || shape === "all") {
-      ctx.fillStyle = `${bgcolor}`;
-      ctx.fillRect(rect.width - 30, 0, 30, 30);
-      ctx.font = "20px georgia";
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      ctx.fillStyle = textcolor;
-      ctx.fillText("x", rect.width - 15, 15);
-
+    if (buttonIsWhiteRef.current) {
+      buttonRender(contextRef.current, rect, { shape: "all" });
     }
   }
+
+
 
   useEffect(() => {
     // Initialize the Canvas
@@ -332,13 +232,18 @@ export const Canvas = props => {
     // setting the context to ContextRef
     contextRef.current = ctx;
 
+    buttonCoordRef.current['x'] = {
+      x0: canvasRef.current.getBoundingClientRect().width - 30,
+      x1: canvasRef.current.getBoundingClientRect().width, y0: 0, y1: 30
+    }
+
     // Buttons
-    buttonRender(contextRef.current, rect, { shape: "x" });
-    buttonRender(contextRef.current, rect, { shape: "rectangle" });
-    buttonRender(contextRef.current, rect, { shape: "circle" });
-    buttonRender(contextRef.current, rect, { shape: "line" });
-    buttonRender(contextRef.current, rect, { shape: "pencil" });
-    buttonRender(contextRef.current, rect, { shape: "color" });
+    for (let shape in shapesRef.current) {
+      buttonRender(contextRef.current, rect, { shape: shape });
+    }
+
+    // drawPencil is default. So color the button bg
+    buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: "pencil" });
 
 
 
