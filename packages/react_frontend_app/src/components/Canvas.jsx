@@ -43,6 +43,9 @@ export const Canvas = props => {
         const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
         if (isOutsidePrevMouseDownButton) {
           buttonRender(contextRef.current, rect, { shape: prevMouseDownButton });
+          Object.keys(whichShapeRef.current).forEach((key) => {
+            if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: key }) }
+          })
           buttonIsWhiteRef.current = false;
         }
       }
@@ -161,7 +164,7 @@ export const Canvas = props => {
             clearCanvas(contextRef.current, rect);
           }
 
-          buttonRender(contextRef.current, rect, { shape: shape });
+          buttonRender(contextRef.current, rect, { shape: "all" });
           buttonIsWhiteRef.current = false;
 
           // Setting state on what is to be drawn
@@ -171,17 +174,11 @@ export const Canvas = props => {
             Object.keys(whichShapeRef.current).forEach((key) => {
               whichShapeRef.current[key] = (key === shape); // turning all others false except the shape rectangle
             })
-            /// Changing background color of shape's button when selected
-            buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: shape })
-            ///
           } else if (shape === "pencil") {
             whichShapeRef.current.pencil = true;
             Object.keys(whichShapeRef.current).forEach((key) => {
               whichShapeRef.current[key] = (key === shape);
             })
-            /// Changing background color of shape's button when selected
-            buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: shape })
-            ///
           }
           //
           //
@@ -189,6 +186,11 @@ export const Canvas = props => {
           //
           //
 
+          /// Changing background color of selected shape's button 
+          Object.keys(whichShapeRef.current).forEach((key) => {
+            if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: key }) }
+          })
+          ///
           return;
         }
       }
@@ -208,6 +210,11 @@ export const Canvas = props => {
 
     if (buttonIsWhiteRef.current) {
       buttonRender(contextRef.current, rect, { shape: "all" });
+      /// Changing background color of selected shape's button 
+      Object.keys(whichShapeRef.current).forEach((key) => {
+        if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, { bgcolor: "darkgrey", shape: key }) }
+      })
+      ///
     }
   }
 
