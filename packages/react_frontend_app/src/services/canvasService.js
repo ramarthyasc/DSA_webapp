@@ -1,54 +1,87 @@
 
-export const buttonRender = (ctx, rect, { bgcolor = "lightgrey", textcolor = "black", color = "black", shape = "all" } = {}) => {
-  ctx.fillStyle = `${bgcolor}`;
+export const buttonImagesCreator = (shapes, ctx, rect) => {
 
-  if (shape === "rectangle" || shape === "all") {
-    ctx.clearRect(0, 0, 30, 30);
-    ctx.fillRect(0, 0, 30, 30);
-
-    ctx.save(); // To not get affected by lineWidth set in startDrawing function
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = `${textcolor}`;
-    ctx.strokeRect(5, 5, 20, 20);
-    ctx.restore();
-
+  const buttons = {};
+  for (let shape in shapes) {
+    buttons[shape] = { normal: null, highlight: null, select: null };
   }
-  if (shape === "circle" || shape === "all") {
-    ctx.clearRect(32, 0, 30, 30);
-    ctx.fillRect(32, 0, 30, 30);
 
-    ctx.save(); // To not get affected by lineWidth set in startDrawing function
+  function rectangleImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(0, 0, 30, 30);
+    /// fill the gap between buttons (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(30, 0, 2, 30);
+    ///
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `${textcolor}`;
+    ctx.strokeStyle = iconcolor;
+    ctx.strokeRect(5, 5, 20, 20);
+  }
+
+
+  rectangleImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.rectangle.normal = ctx.getImageData(0, 0, 32, 30);
+  rectangleImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttons.rectangle.highlight = ctx.getImageData(0, 0, 32, 30);
+  rectangleImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.rectangle.select = ctx.getImageData(0, 0, 32, 30);
+
+
+  function circleImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(32, 0, 30, 30);
+    /// fill the gap between buttons (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(62, 0, 2, 30);
+    ///
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = iconcolor;
     ctx.beginPath();
     ctx.arc(47, 15, 10, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.beginPath();
-    ctx.restore();
-
   }
-  if (shape === "line" || shape === "all") {
-    ctx.clearRect(64, 0, 30, 30);
-    ctx.fillRect(64, 0, 30, 30);
 
-    ctx.save(); // To not get affected by lineWidth set in startDrawing function
+  circleImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.circle.normal = ctx.getImageData(32, 0, 32, 30);
+  circleImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttons.circle.highlight = ctx.getImageData(32, 0, 32, 30);
+  circleImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.circle.select = ctx.getImageData(32, 0, 32, 30);
+
+  function lineImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(64, 0, 30, 30);
+    /// fill the gap between buttons (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(94, 0, 2, 30);
+    ///
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `${textcolor}`;
+    ctx.strokeStyle = iconcolor;
     ctx.beginPath();
     ctx.moveTo(69, 5);
     ctx.lineTo(89, 25);
     ctx.stroke();
     ctx.beginPath();
-    ctx.restore();
-
   }
-  if (shape === "pencil" || shape === "all") {
-    ctx.clearRect(96, 0, 30, 30);
+
+  lineImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.line.normal = ctx.getImageData(64, 0, 32, 30);
+  lineImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttons.line.highlight = ctx.getImageData(64, 0, 32, 30);
+  lineImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.line.select = ctx.getImageData(64, 0, 32, 30);
+
+  function pencilImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
     ctx.fillRect(96, 0, 30, 30);
 
-    ctx.save(); // To not get affected by lineWidth set in startDrawing function
+    /// fill the gap between buttons (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(126, 0, 2, 30);
+    ///
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `${textcolor}`;
+    ctx.strokeStyle = iconcolor;
     ctx.beginPath();
     ctx.moveTo(101, 13);
     ctx.lineTo(117, 13);
@@ -61,17 +94,22 @@ export const buttonRender = (ctx, rect, { bgcolor = "lightgrey", textcolor = "bl
     ctx.lineTo(104, 17);
     ctx.stroke();
     ctx.beginPath();
-    ctx.restore();
-
   }
-  if (shape === "color" || shape === "all") {
-    ctx.save();
-    ctx.clearRect(128, 0, 30, 30);
+
+  pencilImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.pencil.normal = ctx.getImageData(96, 0, 32, 30);
+  pencilImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttons.pencil.highlight = ctx.getImageData(96, 0, 32, 30);
+  pencilImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttons.pencil.select = ctx.getImageData(96, 0, 32, 30);
+
+  function colorImage({ bgcolor, iconcolor, color }) {
+    ctx.fillStyle = bgcolor;
     ctx.fillRect(128, 0, 30, 30);
-    ctx.fillStyle = `${color}`;
+    ctx.fillStyle = color;
     ctx.fillRect(133, 5, 20, 20);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = `${textcolor}`
+    ctx.strokeStyle = iconcolor;
     ctx.beginPath();
     ctx.moveTo(133, 5);
     ctx.lineTo(153, 5);
@@ -80,19 +118,101 @@ export const buttonRender = (ctx, rect, { bgcolor = "lightgrey", textcolor = "bl
     ctx.closePath();
     ctx.stroke();
     ctx.beginPath();
-    ctx.restore();
-
   }
-  if (shape === "x" || shape === "all") {
-    ctx.fillStyle = `${bgcolor}`;
+
+  colorImage({ bgcolor: "lightgrey", iconcolor: "black", color: "black" })
+  buttons.color.normal = ctx.getImageData(128, 0, 30, 30);
+  colorImage({ bgcolor: "lightgrey", iconcolor: "white", color: "black" })
+  buttons.color.highlight = ctx.getImageData(128, 0, 30, 30);
+  colorImage({ bgcolor: "darkgrey", iconcolor: "black", color: "black" })
+  buttons.color.select = ctx.getImageData(128, 0, 30, 30);
+
+  function xImage({ bgcolor, iconcolor }) {
+    ctx.fillStyle = bgcolor;
     ctx.fillRect(rect.width - 30, 0, 30, 30);
-    ctx.font = "20px georgia";
+    ctx.font = "20px Arial";
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
-    ctx.fillStyle = textcolor;
+    ctx.fillStyle = iconcolor;
     ctx.fillText("x", rect.width - 15, 15);
-
   }
+  xImage({ bgcolor: "lightgrey", iconcolor: "black" })
+  buttons.x.normal = ctx.getImageData(rect.width - 30, 0, 30, 30);
+  xImage({ bgcolor: "lightgrey", iconcolor: "white" })
+  buttons.x.highlight = ctx.getImageData(rect.width - 30, 0, 30, 30);
+  xImage({ bgcolor: "darkgrey", iconcolor: "black" })
+  buttons.x.select = ctx.getImageData(rect.width - 30, 0, 30, 30);
+
+
+  return buttons;
+}
+
+
+
+
+export const buttonRender = (ctx, rect, buttons, { normal = false, highlight = false, select = false }, shape = "all") => {
+
+
+  if (shape === "rectangle" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.rectangle.normal, 0, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.rectangle.highlight, 0, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.rectangle.select, 0, 0);
+    }
+  }
+
+  if (shape === "circle" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.circle.normal, 32, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.circle.highlight, 32, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.circle.select, 32, 0);
+    }
+  }
+
+  if (shape === "line" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.line.normal, 64, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.line.highlight, 64, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.line.select, 64, 0);
+    }
+  }
+
+  if (shape === "pencil" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.pencil.normal, 96, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.pencil.highlight, 96, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.pencil.select, 96, 0);
+    }
+  }
+
+  if (shape === "color" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.color.normal, 128, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.color.highlight, 128, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.color.select, 128, 0);
+    }
+  }
+
+  if (shape === "x" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttons.x.normal, rect.width - 30, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttons.x.highlight, rect.width - 30, 0);
+    } else if (select) {
+      ctx.putImageData(buttons.x.select, rect.width - 30, 0);
+    }
+  }
+
 }
 
 
@@ -185,9 +305,10 @@ export const startPencilDraw = (ctx, { offsetX, offsetY }) => {
   ctx.moveTo(offsetX, offsetY)
 }
 
-export const drawPencil = (ctx, { offsetX, offsetY }) => {
+export const drawPencil = (ctx, { clientX, clientY }, initCoord) => {
 
-  ctx.lineTo(offsetX, offsetY);
+  //  clientX(drawing's) - (clientX(moveTo's) - initialMoveToX(ctx)) , clientY(drawing's) - (clientY(moveTo's) - initialMoveToY(ctx)) -> substitute below
+  ctx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
   ctx.stroke();
 }
 
@@ -195,6 +316,6 @@ export const drawDot = (ctx, { offsetX, offsetY }) => {
   ctx.fillRect(offsetX, offsetY, 2, 2);
 }
 
-export const drawRectangle = (ctx, rect, { offsetX, offsetY }, initCoord, clearCanvas) => {
-  ctx.strokeRect(initCoord.x, initCoord.y, offsetX - initCoord.x, offsetY - initCoord.y);
+export const drawRectangle = (ctx, { clientX, clientY }, initCoord) => {
+  ctx.strokeRect(initCoord.xOffset, initCoord.yOffset, clientX - initCoord.xClient, clientY - initCoord.yClient);
 }
