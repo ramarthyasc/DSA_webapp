@@ -319,3 +319,21 @@ export const drawDot = (ctx, { offsetX, offsetY }) => {
 export const drawRectangle = (ctx, { clientX, clientY }, initCoord) => {
   ctx.strokeRect(initCoord.xOffset, initCoord.yOffset, clientX - initCoord.xClient, clientY - initCoord.yClient);
 }
+
+
+export const drawCircle = (ctx, { clientX, clientY }, initCoord) => {
+  // clientX, clientY is your Mousecoordinates while drawing -from the top left corner of Windows as (0,0)
+  ctx.beginPath();
+  // dynamic center - having your circumference starting from the initialCoord. If you want static center, then only give xOffset and yOffset
+  ctx.arc(initCoord.xOffset + (clientX - initCoord.xClient), initCoord.yOffset + (clientY - initCoord.yClient),
+    Math.sqrt((clientX - initCoord.xClient) ** 2 + (clientY - initCoord.yClient) ** 2), 0, 2 * Math.PI);
+  ctx.stroke();
+
+}
+
+export const drawLine = (ctx, { clientX, clientY }, initCoord) => {
+  ctx.beginPath();
+  ctx.moveTo(initCoord.xOffset, initCoord.yOffset);
+  ctx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
+  ctx.stroke();
+}

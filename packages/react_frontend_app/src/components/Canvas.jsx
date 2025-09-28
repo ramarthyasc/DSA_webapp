@@ -1,7 +1,10 @@
 import '../styles/Canvas.css';
 import { useRef } from 'react';
 import { useEffect } from 'react';
-import { setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton }
+import {
+  setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
+  clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton
+}
   from '../services/canvasService.js';
 export const Canvas = () => {
   const canvasRef = useRef();
@@ -23,8 +26,7 @@ export const Canvas = () => {
   })
   const buttonsRef = useRef({});
   // Drawing helpers : 
-  const rectInitialCoordRef = useRef({});
-  const pencilInitialCoordRef = useRef({});
+  const shapeInitialCoordRef = useRef({});
   const imgDataRef = useRef(null);
 
 
@@ -43,7 +45,6 @@ export const Canvas = () => {
       const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
       if (!prevMouseDownButton) return;
       const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
-      console.log(isOutsidePrevMouseDownButton);
 
       // If Mouse pointer is outside anywhere that button where previous mouse down happened, then rerender the button to normal
       if (isOutsidePrevMouseDownButton) {
@@ -100,7 +101,7 @@ export const Canvas = () => {
 
     if (whichShapeRef.current.pencil) {
       /// if pencil is selected
-      pencilInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
+      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
       drawDot(contextRef.current, { offsetX, offsetY });
       startPencilDraw(contextRef.current, { offsetX, offsetY });
     }
@@ -111,10 +112,23 @@ export const Canvas = () => {
       /// screenshotting the canvas before drawing the rectangle
       imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
       /// Saving the clicked coordinates
-      rectInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
+      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
 
     }
 
+    if (whichShapeRef.current.circle) {
+      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
+      /// Saving the clicked coordinates
+      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
+
+    }
+
+    if (whichShapeRef.current.line) {
+      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
+      /// Saving the clicked coordinates
+      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
+
+    }
     //
     //
     // Other shapes to be implemented
@@ -163,8 +177,17 @@ export const Canvas = () => {
             Object.keys(whichShapeRef.current).forEach((key) => {
               whichShapeRef.current[key] = (key === shape);
             })
+          } else if (shape === "circle") {
+            whichShapeRef.current.circle = true;
+            Object.keys(whichShapeRef.current).forEach((key) => {
+              whichShapeRef.current[key] = (key === shape);
+            })
+          } else if (shape === "line") {
+            whichShapeRef.current.line = true;
+            Object.keys(whichShapeRef.current).forEach((key) => {
+              whichShapeRef.current[key] = (key === shape);
+            })
           }
-          //
           //
           // other shapes to be implemented
           //
@@ -261,14 +284,26 @@ export const Canvas = () => {
 
         if (whichShapeRef.current.pencil) { /// by default, pencil is true
           /// for pencil === true
-          drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, pencilInitialCoordRef.current);
+          drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
         if (whichShapeRef.current.rectangle) {
           /// for rectangle === true /// getImageData is done on MouseDown
           clearCanvas(contextRef.current, rect);
           contextRef.current.putImageData(imgDataRef.current, 0, 0);
-          drawRectangle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, rectInitialCoordRef.current);
+          drawRectangle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+        }
+
+        if (whichShapeRef.current.circle) {
+          clearCanvas(contextRef.current, rect);
+          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          drawCircle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+        }
+
+        if (whichShapeRef.current.line) {
+          // clearCanvas(contextRef.current, rect);
+          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          drawLine(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
         //
         //
