@@ -325,8 +325,8 @@ export const drawCircle = (ctx, { clientX, clientY }, initCoord) => {
   // clientX, clientY is your Mousecoordinates while drawing -from the top left corner of Windows as (0,0)
   ctx.beginPath();
   // dynamic center - having your circumference starting from the initialCoord. If you want static center, then only give xOffset and yOffset
-  ctx.arc(initCoord.xOffset + (clientX - initCoord.xClient), initCoord.yOffset + (clientY - initCoord.yClient),
-    Math.sqrt((clientX - initCoord.xClient) ** 2 + (clientY - initCoord.yClient) ** 2), 0, 2 * Math.PI);
+  ctx.arc(initCoord.xOffset + (clientX - initCoord.xClient) / 2, initCoord.yOffset + (clientY - initCoord.yClient) / 2,
+    Math.sqrt((clientX - initCoord.xClient) ** 2 + (clientY - initCoord.yClient) ** 2) / 2, 0, 2 * Math.PI);
   ctx.stroke();
 
 }
