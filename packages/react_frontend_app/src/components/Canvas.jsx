@@ -1,9 +1,9 @@
 import '../styles/Canvas.css';
-import { useRef } from 'react';
-import { useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
-  clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton
+  clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
+  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton
 }
   from '../services/canvasService.js';
 export const Canvas = () => {
@@ -11,23 +11,40 @@ export const Canvas = () => {
   const contextRef = useRef();
   //whichShapeRef helps isDrawingRef identify which shape to draw when i click and hold on the canvas
   /// by default, pencil is true
-  const whichShapeRef = useRef({ pencil: true, rectangle: false, circle: false, line: false });
+  const whichShapeRef = useRef({ pencil: true, rectangle: false, circle: false, line: false, x: false });
   //isDrawingRef is for allowing to draw any shapes on the canvas - this is general for all shapes
   //mouseUpRef decides if isDrawingRef is enabled or not. So this is the entry point for drawing
   const isDrawingRef = useRef(false);
   const mouseUpRef = useRef(true);
   const buttonIsWhiteRef = useRef(false);
   const mouseDownCoordRef = useRef({});
-  const shapesRef = useRef({ x: "x", rectangle: "rectangle", circle: "circle", line: "line", pencil: "pencil", color: "color" });
+  const buttonsRef = useRef({ x: "x", rectangle: "rectangle", circle: "circle", line: "line", pencil: "pencil", color: "color" });
+  // we have implicit positioning - as colors is an Array -> in order of color palette presentation in the canvas
+  const colorsRef = useRef(["black", "red", "green", "blue", "orange"]);
   const buttonCoordRef = useRef({
     rectangle: { x0: 0, x1: 30, y0: 0, y1: 30 },
     circle: { x0: 32, x1: 62, y0: 0, y1: 30 }, line: { x0: 64, x1: 94, y0: 0, y1: 30 }, pencil: { x0: 96, x1: 126, y0: 0, y1: 30 },
     color: { x0: 128, x1: 158, y0: 0, y1: 30 },
   })
-  const buttonsRef = useRef({});
+  // we have implicit positioning - as colors is an Array -> in order of color palette presentation in the canvas
+  const colorPaletteCoords = useMemo(() => {
+    const colorCoords = [];
+    for (let i = 0; i < colorsRef.current.length; i++) {
+      if (i === 0) {
+        colorCoords.push([128, 0])
+      } else {
+        colorCoords.push([colorCoords[i - 1][0] + 30, 0]);
+      }
+    }
+    return colorCoords;
+  }, []);
+
+  const buttonsImgDataRef = useRef({});
+  const colorPaletteImgDataRef = useRef({});
+  const colorPaletteIsOnRef = useRef(false);
   // Drawing helpers : 
   const shapeInitialCoordRef = useRef({});
-  const imgDataRef = useRef(null);
+  const imgDataRef = useRef([]);
 
 
 
@@ -39,21 +56,34 @@ export const Canvas = () => {
 
 
     if (buttonIsWhiteRef.current) {
-      mouseUpRef.current = true; // if there was any white button displayed, then we are starting a new drawing(not continuation). So it acts like
-      //mouseup
-
       const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
-      if (!prevMouseDownButton) return;
       const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
 
-      // If Mouse pointer is outside anywhere that button where previous mouse down happened, then rerender the button to normal
+      // If Mouse pointer is outside that button where previous mouse down happened, then rerender the button to normal
       if (isOutsidePrevMouseDownButton) {
-        buttonRender(contextRef.current, rect, buttonsRef.current, { normal: true }, prevMouseDownButton);
+        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+          colorPaletteImgDataRef.current, colorsRef.current[0], prevMouseDownButton);
+
         Object.keys(whichShapeRef.current).forEach((key) => {
-          if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, buttonsRef.current, { select: true }, key); }
+          if (whichShapeRef.current[key]) {
+            buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+              colorPaletteImgDataRef.current, colorsRef.current[0], key);
+          }
         })
         buttonIsWhiteRef.current = false;
       }
+
+      if (colorPaletteIsOnRef.current) {
+        const prevMouseDownColorIndex = colorPaletteIndexFinder(mouseDownCoordRef.current, colorPaletteCoords, isInsideButtonRegion);
+        const isOutsidePrevMouseDownColor = isOutsideColorButton(prevMouseDownColorIndex, { offsetX, offsetY },
+          colorPaletteCoords, isInsideButtonRegion);
+        // If Mouse pointer is outside that color where previous mouse down happened, then rerender that color's image or whole pallete to normal
+        if (isOutsidePrevMouseDownColor) {
+          colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
+          buttonIsWhiteRef.current = false;
+        }
+      }
+
 
     }
 
@@ -79,25 +109,66 @@ export const Canvas = () => {
     ///
 
     // button highlighting: start
-    for (let shape in shapesRef.current) {
-      if (isInsideButtonRegion({
-        x0: buttonCoordRef.current[shape].x0, x1: buttonCoordRef.current[shape].x1,
-        y0: buttonCoordRef.current[shape].y0, y1: buttonCoordRef.current[shape].y1
-      }, { offsetX, offsetY })) {
+    if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
+      isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
+      //if the cursor is inside any button area
+      for (let button in buttonsRef.current) {
+        if (isInsideButtonRegion({
+          x0: buttonCoordRef.current[button].x0, x1: buttonCoordRef.current[button].x1,
+          y0: buttonCoordRef.current[button].y0, y1: buttonCoordRef.current[button].y1
+        }, { offsetX, offsetY })) {
 
-        buttonRender(contextRef.current, rect, buttonsRef.current, { highlight: true }, shape);
-        buttonIsWhiteRef.current = true;
-        return;
+          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { highlight: true }, colorPaletteImgDataRef.current,
+            colorsRef.current[0], button);
+
+          buttonIsWhiteRef.current = true;
+          mouseUpRef.current = true; // if there was any white button displayed, then we are starting a new drawing(not continuation). So it acts like
+          //mouseup
+        }
       }
+      return;
     }
 
 
+    /// We can use isInsideButtonRegion here. (Here, button is a general area)
+
+    if (colorPaletteIsOnRef.current && isInsideButtonRegion({
+      x0: colorPaletteCoords[0][0], x1: colorPaletteCoords.at(-1)[0] + 30, y0: 0, y1: 30
+    }, { offsetX, offsetY })) {
+
+      for (let i = 0; i < colorPaletteCoords.length; i++) {
+        if (isInsideButtonRegion({
+          x0: colorPaletteCoords[i][0], x1: colorPaletteCoords[i][0] + 30,
+          y0: colorPaletteCoords[i][1], y1: colorPaletteCoords[i][1] + 30
+        }, { offsetX, offsetY })) {
+          colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current, i);
+          buttonIsWhiteRef.current = true;
+          mouseUpRef.current = true; // if there was any white button displayed, then we are starting a new drawing(not continuation). So it acts like
+          //mouseup
+        }
+      }
+      return;
+    }
+
+    // THE CODE BELOW ONLY APPLIES FOR DRAWABLE CANVAS !!!
+    //
+    // As there are 'return's above if cursor is in the button area/ color area[when activated], the code below WORKS ONLY FOR DRAWABLE CANVAS !!!
     // Initiating the Drawing on drawable canvas when clicking on the drawable canvas
 
-    /// Set properties before drawing
-    setDrawProps(contextRef.current, { lineWidth: 4 });
-    ///
 
+    if (colorPaletteIsOnRef.current) {
+      // Paste the previous drawable canvas if there is palette present
+      pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+      // Then normalize the background color of just "color" button
+      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+        colorPaletteImgDataRef.current, colorsRef.current[0], "color");
+
+      colorPaletteIsOnRef.current = false;
+    }
+
+    /// Set properties before drawing
+    setDrawProps(contextRef.current, { lineWidth: 4, color: colorsRef.current[0] });
+    ///
 
     if (whichShapeRef.current.pencil) {
       /// if pencil is selected
@@ -106,29 +177,16 @@ export const Canvas = () => {
       startPencilDraw(contextRef.current, { offsetX, offsetY });
     }
 
-    if (whichShapeRef.current.rectangle) {
-      /// if rectangle is selected
+    if (whichShapeRef.current.rectangle || whichShapeRef.current.circle || whichShapeRef.current.line) {
+      /// if rectangle or one of other shapes is selected
 
       /// screenshotting the canvas before drawing the rectangle
-      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
+      imgDataRef.current = copyDrawableCanvas(contextRef.current, rect);
       /// Saving the clicked coordinates
       shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
 
     }
 
-    if (whichShapeRef.current.circle) {
-      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
-      /// Saving the clicked coordinates
-      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
-
-    }
-
-    if (whichShapeRef.current.line) {
-      imgDataRef.current = contextRef.current.getImageData(0, 0, rect.width, rect.height);
-      /// Saving the clicked coordinates
-      shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
-
-    }
     //
     //
     // Other shapes to be implemented
@@ -145,66 +203,97 @@ export const Canvas = () => {
 
     // If mouse up, you have to stop any kind of drawing (continuation or anything else) - set isDrawingRef = false in MouseMove
     mouseUpRef.current = true;
+    // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
+    if (whichShapeRef.current.pencil) { contextRef.current.beginPath(); }
     //
 
-    for (let shape in shapesRef.current) {
+    if (buttonIsWhiteRef.current) {
+      //ie; if the onMouseUp is done on the button without leaving the button after onMouseDown on that button (ie; Button is White on mouseup)
 
-      if (isInsideButtonRegion({
-        x0: buttonCoordRef.current[shape].x0, x1: buttonCoordRef.current[shape].x1,
-        y0: buttonCoordRef.current[shape].y0, y1: buttonCoordRef.current[shape].y1
-      }, { offsetX, offsetY })) {
+      for (let button in buttonsRef.current) {
+        if (isInsideButtonRegion({
+          x0: buttonCoordRef.current[button].x0, x1: buttonCoordRef.current[button].x1,
+          y0: buttonCoordRef.current[button].y0, y1: buttonCoordRef.current[button].y1
+        }, { offsetX, offsetY })) {
 
-
-        if (buttonIsWhiteRef.current) {
-          //ie; if the onMouseUp is done on the button without leaving the button after onMouseDown on that button (ie; Button is White on mouseup)
-
-          if (shape === "x") {
+          if (button === "x") {
             clearCanvas(contextRef.current, rect);
+            // To avoid pasteDrawableCanvas happening - when i click X, and click on any shape , the previous drawing comes into display.
+            colorPaletteIsOnRef.current = false;
           }
 
-          buttonRender(contextRef.current, rect, buttonsRef.current, { normal: true });
-          buttonIsWhiteRef.current = false;
+          // Rerender the buttons which are unselected to normal mode. ie; Render all buttons in normal mode
+          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
           // Setting state on what is to be drawn
 
-          if (shape === "rectangle") {
-            whichShapeRef.current.rectangle = true; //setting state : rectangle is selected to be drawn now on
+          if (button === "rectangle" || button === "pencil" || button === "circle" || button === "line") {
             Object.keys(whichShapeRef.current).forEach((key) => {
-              whichShapeRef.current[key] = (key === shape); // turning all others false except the shape rectangle
+              whichShapeRef.current[key] = (key === button); // turning all others false and turning on the active button
             })
-          } else if (shape === "pencil") {
-            whichShapeRef.current.pencil = true;
-            Object.keys(whichShapeRef.current).forEach((key) => {
-              whichShapeRef.current[key] = (key === shape);
-            })
-          } else if (shape === "circle") {
-            whichShapeRef.current.circle = true;
-            Object.keys(whichShapeRef.current).forEach((key) => {
-              whichShapeRef.current[key] = (key === shape);
-            })
-          } else if (shape === "line") {
-            whichShapeRef.current.line = true;
-            Object.keys(whichShapeRef.current).forEach((key) => {
-              whichShapeRef.current[key] = (key === shape);
-            })
+            if (colorPaletteIsOnRef.current) {
+              pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+              colorPaletteIsOnRef.current = false;
+            }
+          } else if (button === "color") {
+            // don't lightgrey the selected whichShapeRef buttons. let it be there.
+
+            if (colorPaletteIsOnRef.current) {
+              pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+              colorPaletteIsOnRef.current = false;
+            } else {
+              /// copy the contents - before displaying the color palette
+              imgDataRef.current = copyDrawableCanvas(contextRef.current, rect);
+              // Render the color palette including the first selected dark grey bg color
+              colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
+              colorPaletteIsOnRef.current = true
+            }
           }
           //
           // other shapes to be implemented
           //
           //
 
-          /// Changing background color of selected shape's button 
+          /// Changing background color of selected button's button ((removed "color" button from whichShapeRef -because it's "select" &
+          // "highlight"(when palette is on) is handled by color palette. (highlight when colorPalette is off - is handled by color in buttonsRef)
+          //by colorPalette))
           Object.keys(whichShapeRef.current).forEach((key) => {
-            if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, buttonsRef.current, { select: true }, key); }
+            if (whichShapeRef.current[key]) {
+              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
+                colorsRef.current[0], key);
+            }
           })
           ///
-          return;
-        }
 
+          buttonIsWhiteRef.current = false;
+          return;
+
+
+        }
+      }
+
+      // Color Picking 
+
+      if (colorPaletteIsOnRef.current) {
+
+        // get the index in which i am upping the mouse - use colorPaletteIndexFinder()
+        // In 'colorsRef.current', swap the ith index color with the 0th index.
+        // setDrawProps color to colorsRef.current[0];
+        // pasteDrawableCanvas, & colorPaletteIsOnRef = false;
+        // render the "color" button only - from the buttonRender function
+        const mouseUpColorIndex = colorPaletteIndexFinder({ offsetX, offsetY }, colorPaletteCoords, isInsideButtonRegion);
+        //// swapping
+        [colorsRef.current[0], colorsRef.current[mouseUpColorIndex]] = [colorsRef.current[mouseUpColorIndex], colorsRef.current[0]];
+        pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+
+        colorPaletteIsOnRef.current = false;
+
+        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+          colorPaletteImgDataRef.current, colorsRef.current[0], "color");
 
       }
-    }
 
+    }
 
   }
 
@@ -214,11 +303,19 @@ export const Canvas = () => {
 
     const rect = canvasRef.current.getBoundingClientRect();
 
-    if (buttonIsWhiteRef) {
-      buttonRender(contextRef.current, rect, buttonsRef.current, { normal: true });
+    if (buttonIsWhiteRef.current) {
+      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
       Object.keys(whichShapeRef.current).forEach((key) => {
-        if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, buttonsRef.current, { select: true }, key); }
+        if (whichShapeRef.current[key]) {
+          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+            colorPaletteImgDataRef.current, colorsRef.current[0], key);
+        }
       })
+    }
+
+    if (colorPaletteIsOnRef.current) {
+      colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
     }
   }
 
@@ -251,12 +348,14 @@ export const Canvas = () => {
 
 
     // create and store buttons in an object datastructure
-    buttonsRef.current = buttonImagesCreator(shapesRef.current, contextRef.current, rect);
+    buttonsImgDataRef.current = buttonImagesCreator(buttonsRef.current, contextRef.current, rect);
+    // create and store color palette imgs data in an object datastructure
+    colorPaletteImgDataRef.current = colorPaletteImagesCreator(contextRef.current, colorsRef.current);
 
     // Buttons Render
-    buttonRender(contextRef.current, rect, buttonsRef.current, { normal: true });
+    buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
     /// drawPencil is active by default. So color the button bg
-    buttonRender(contextRef.current, rect, buttonsRef.current, { select: true }, "pencil");
+    buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
 
 
 
@@ -289,20 +388,17 @@ export const Canvas = () => {
 
         if (whichShapeRef.current.rectangle) {
           /// for rectangle === true /// getImageData is done on MouseDown
-          clearCanvas(contextRef.current, rect);
-          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawRectangle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
         if (whichShapeRef.current.circle) {
-          clearCanvas(contextRef.current, rect);
-          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawCircle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
         if (whichShapeRef.current.line) {
-          // clearCanvas(contextRef.current, rect);
-          contextRef.current.putImageData(imgDataRef.current, 0, 0);
+          pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawLine(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
         //
@@ -312,10 +408,16 @@ export const Canvas = () => {
         //
         //
 
-        buttonRender(contextRef.current, rect, buttonsRef.current, { normal: true });
+        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
         Object.keys(whichShapeRef.current).forEach((key) => {
-          if (whichShapeRef.current[key]) { buttonRender(contextRef.current, rect, buttonsRef.current, { select: true }, key); }
+          if (whichShapeRef.current[key]) {
+            buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+              colorPaletteImgDataRef.current, colorsRef.current[0], key);
+          }
         })
+        // if (colorPaletteIsOnRef.current) {
+        //   colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
+        // }
 
       }
 
