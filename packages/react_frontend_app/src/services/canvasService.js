@@ -91,6 +91,9 @@ export const buttonImagesCreator = (buttons, ctx, rect) => {
     ctx.lineTo(101, 17);
     ctx.lineTo(101, 13);
 
+    ctx.moveTo(117, 13);
+    ctx.lineTo(117, 17);
+
     ctx.moveTo(104, 13);
     ctx.lineTo(104, 17);
     ctx.stroke();
@@ -143,6 +146,69 @@ export const buttonImagesCreator = (buttons, ctx, rect) => {
   buttonsImgData.x.highlight = ctx.getImageData(rect.width - 30, 0, 30, 30);
   xImage({ bgcolor: "darkgrey", iconcolor: "black" })
   buttonsImgData.x.select = ctx.getImageData(rect.width - 30, 0, 30, 30);
+
+
+  function redoImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(rect.width - 62, 0, 30, 30);
+
+    /// fill the gap between buttonsImgData (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(rect.width - 32, 0, 2, 30);
+    ///
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = iconcolor;
+    ctx.beginPath();
+    ctx.moveTo(rect.width - 37, 10);
+    ctx.lineTo(rect.width - 57, 10);
+    ctx.lineTo(rect.width - 57, 20);
+    ctx.lineTo(rect.width - 47, 20);
+    ctx.moveTo(rect.width - 37, 10);
+    ctx.lineTo(rect.width - 42, 5);
+    ctx.moveTo(rect.width - 37, 10);
+    ctx.lineTo(rect.width - 42, 15);
+
+    ctx.stroke();
+    ctx.beginPath();
+  }
+
+  redoImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttonsImgData.redo.normal = ctx.getImageData(rect.width - 62, 0, 32, 30);
+  redoImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttonsImgData.redo.highlight = ctx.getImageData(rect.width - 62, 0, 32, 30);
+  redoImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttonsImgData.redo.select = ctx.getImageData(rect.width - 62, 0, 32, 30);
+
+  function undoImage({ bgcolor, iconcolor, gapcolor }) {
+    ctx.fillStyle = bgcolor;
+    ctx.fillRect(rect.width - 94, 0, 30, 30);
+
+    /// fill the gap between buttonsImgData (just visual)
+    ctx.fillStyle = gapcolor;
+    ctx.fillRect(rect.width - 64, 0, 2, 30);
+    ///
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = iconcolor;
+    ctx.beginPath();
+    ctx.moveTo(rect.width - 89, 10);
+    ctx.lineTo(rect.width - 69, 10);
+    ctx.lineTo(rect.width - 69, 20);
+    ctx.lineTo(rect.width - 79, 20);
+    ctx.moveTo(rect.width - 89, 10);
+    ctx.lineTo(rect.width - 84, 5);
+    ctx.moveTo(rect.width - 89, 10);
+    ctx.lineTo(rect.width - 84, 15);
+
+    ctx.stroke();
+    ctx.beginPath();
+  }
+
+  undoImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
+  buttonsImgData.undo.normal = ctx.getImageData(rect.width - 94, 0, 32, 30);
+  undoImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
+  buttonsImgData.undo.highlight = ctx.getImageData(rect.width - 94, 0, 32, 30);
+  undoImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
+  buttonsImgData.undo.select = ctx.getImageData(rect.width - 94, 0, 32, 30);
 
 
   return buttonsImgData;
@@ -272,7 +338,28 @@ export const buttonRender = (ctx, rect, buttonsImgData, { normal = false, highli
     }
   }
 
+  if (shape === "redo" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttonsImgData.redo.normal, rect.width - 62, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttonsImgData.redo.highlight, rect.width - 62, 0);
+    } else if (select) {
+      ctx.putImageData(buttonsImgData.redo.select, rect.width - 62, 0);
+    }
+  }
+
+  if (shape === "undo" || shape === "all") {
+    if (normal) {
+      ctx.putImageData(buttonsImgData.undo.normal, rect.width - 94, 0);
+    } else if (highlight) {
+      ctx.putImageData(buttonsImgData.undo.highlight, rect.width - 94, 0);
+    } else if (select) {
+      ctx.putImageData(buttonsImgData.undo.select, rect.width - 94, 0);
+    }
+  }
 }
+
+
 
 
 export const isInsideButtonRegion = ({ x0, x1, y0, y1 }, { offsetX, offsetY }) => {
@@ -286,6 +373,7 @@ export const isInsideButtonRegion = ({ x0, x1, y0, y1 }, { offsetX, offsetY }) =
 export const colorPaletteIndexFinder = (mouseDownCoord, colorPaletteCoords, isInsideButtonRegion) => {
 
   for (let i = 0; i < colorPaletteCoords.length; i++) {
+    // console.log("heloo")
     if (isInsideButtonRegion({
       x0: colorPaletteCoords[i][0], x1: colorPaletteCoords[i][0] + 30,
       y0: colorPaletteCoords[i][1], y1: colorPaletteCoords[i][1] + 30
@@ -332,6 +420,14 @@ export const buttonFinder = (mouseDownCoord, rect, isInsideButtonRegion) => {
       { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
       return "color";
 
+    case isInsideButtonRegion({ x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 },
+      { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
+      return "redo";
+
+    case isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 },
+      { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
+      return "undo";
+
     default:
       return null;
   }
@@ -364,6 +460,15 @@ export const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegi
     case "color":
       return !isInsideButtonRegion({ x0: 128, x1: 158, y0: 0, y1: 30 },
         { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
+
+    case "redo":
+      return !isInsideButtonRegion({ x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 },
+        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
+
+    case "undo":
+      return !isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 },
+        { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
+
     default:
       return null;
   }
@@ -373,7 +478,7 @@ export const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegi
 
 export const clearCanvas = (ctx, rect) => {
   //clearing only the drawable canvas
-  ctx.clearRect(158, 0, rect.width - 188, 30);
+  ctx.clearRect(158, 0, rect.width - 252, 30);
   ctx.clearRect(0, 30, rect.width, rect.height - 30);
 }
 
@@ -428,7 +533,7 @@ export const drawLine = (ctx, { clientX, clientY }, initCoord) => {
 export const copyDrawableCanvas = (ctx, rect) => {
   const imgData = [];
   imgData.push(ctx.getImageData(0, 30, rect.width, rect.height - 30));
-  imgData.push(ctx.getImageData(158, 0, rect.width - 188, 30));
+  imgData.push(ctx.getImageData(158, 0, rect.width - 252, 30));
   return imgData;
 }
 
@@ -436,3 +541,4 @@ export const pasteDrawableCanvas = (ctx, drawableCanvasImgDataArray) => {
   ctx.putImageData(drawableCanvasImgDataArray[0], 0, 30);
   ctx.putImageData(drawableCanvasImgDataArray[1], 158, 0);
 }
+

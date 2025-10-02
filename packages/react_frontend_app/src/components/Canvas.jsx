@@ -9,18 +9,22 @@ import {
 export const Canvas = () => {
   const canvasRef = useRef();
   const contextRef = useRef();
-  //whichShapeRef helps isDrawingRef identify which shape to draw when i click and hold on the canvas
+  //whichShapeSelectedRef helps isDrawingRef identify which shape to draw when i click and hold on the canvas
   /// by default, pencil is true
-  const whichShapeRef = useRef({ pencil: true, rectangle: false, circle: false, line: false, x: false });
+  const whichShapeSelectedRef = useRef({ pencil: true, rectangle: false, circle: false, line: false });
   //isDrawingRef is for allowing to draw any shapes on the canvas - this is general for all shapes
   //mouseUpRef decides if isDrawingRef is enabled or not. So this is the entry point for drawing
   const isDrawingRef = useRef(false);
   const mouseUpRef = useRef(true);
   const buttonIsWhiteRef = useRef(false);
   const mouseDownCoordRef = useRef({});
-  const buttonsRef = useRef({ x: "x", rectangle: "rectangle", circle: "circle", line: "line", pencil: "pencil", color: "color" });
+  const buttonsRef = useRef({
+    x: "x", redo: "redo", undo: "undo", rectangle: "rectangle",
+    circle: "circle", line: "line", pencil: "pencil", color: "color"
+  });
   // we have implicit positioning - as colors is an Array -> in order of color palette presentation in the canvas
   const colorsRef = useRef(["black", "red", "green", "blue", "orange"]);
+  // x, redo, undo put in buttonCoordRef in useEffects - because rect.width won't become visible before rendering the canvas element
   const buttonCoordRef = useRef({
     rectangle: { x0: 0, x1: 30, y0: 0, y1: 30 },
     circle: { x0: 32, x1: 62, y0: 0, y1: 30 }, line: { x0: 64, x1: 94, y0: 0, y1: 30 }, pencil: { x0: 96, x1: 126, y0: 0, y1: 30 },
@@ -45,7 +49,12 @@ export const Canvas = () => {
   // Drawing helpers : 
   const shapeInitialCoordRef = useRef({});
   const imgDataRef = useRef([]);
-
+  // Undo :
+  // [1,2,3,4,5,6,7,8,9,10]
+  const undoRef = useRef([]);
+  const redoRef = useRef([]);
+  const xPressedNoOtherChangesRef = useRef(false);
+  const activeUndoRedoChainRef = useRef(false);
 
 
   const handleMouseMove = ({ nativeEvent }) => {
@@ -64,8 +73,8 @@ export const Canvas = () => {
         buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
           colorPaletteImgDataRef.current, colorsRef.current[0], prevMouseDownButton);
 
-        Object.keys(whichShapeRef.current).forEach((key) => {
-          if (whichShapeRef.current[key]) {
+        Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+          if (whichShapeSelectedRef.current[key]) {
             buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
               colorPaletteImgDataRef.current, colorsRef.current[0], key);
           }
@@ -74,6 +83,7 @@ export const Canvas = () => {
       }
 
       if (colorPaletteIsOnRef.current) {
+        // when you go outside the canvas, then the mouseDownCoordRef is set as {offsetX: -1,offsetY: -1}. So the bottom thing will become null.
         const prevMouseDownColorIndex = colorPaletteIndexFinder(mouseDownCoordRef.current, colorPaletteCoords, isInsideButtonRegion);
         const isOutsidePrevMouseDownColor = isOutsideColorButton(prevMouseDownColorIndex, { offsetX, offsetY },
           colorPaletteCoords, isInsideButtonRegion);
@@ -100,6 +110,7 @@ export const Canvas = () => {
     const rect = canvasRef.current.getBoundingClientRect();
     const { offsetX, offsetY, clientX, clientY } = nativeEvent;
 
+    // Iam giving coordinates with negatives for the canvas here.
     mouseDownCoordRef.current = { offsetX, offsetY };
 
     if (nativeEvent.button !== 0) return;
@@ -110,7 +121,7 @@ export const Canvas = () => {
 
     // button highlighting: start
     if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
-      isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
+      isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
       //if the cursor is inside any button area
       for (let button in buttonsRef.current) {
         if (isInsideButtonRegion({
@@ -132,6 +143,7 @@ export const Canvas = () => {
 
     /// We can use isInsideButtonRegion here. (Here, button is a general area)
 
+    // If inside the color palette area when color palette is active
     if (colorPaletteIsOnRef.current && isInsideButtonRegion({
       x0: colorPaletteCoords[0][0], x1: colorPaletteCoords.at(-1)[0] + 30, y0: 0, y1: 30
     }, { offsetX, offsetY })) {
@@ -170,14 +182,14 @@ export const Canvas = () => {
     setDrawProps(contextRef.current, { lineWidth: 4, color: colorsRef.current[0] });
     ///
 
-    if (whichShapeRef.current.pencil) {
+    if (whichShapeSelectedRef.current.pencil) {
       /// if pencil is selected
       shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
       drawDot(contextRef.current, { offsetX, offsetY });
       startPencilDraw(contextRef.current, { offsetX, offsetY });
     }
 
-    if (whichShapeRef.current.rectangle || whichShapeRef.current.circle || whichShapeRef.current.line) {
+    if (whichShapeSelectedRef.current.rectangle || whichShapeSelectedRef.current.circle || whichShapeSelectedRef.current.line) {
       /// if rectangle or one of other shapes is selected
 
       /// screenshotting the canvas before drawing the rectangle
@@ -201,11 +213,39 @@ export const Canvas = () => {
     const rect = canvasRef.current.getBoundingClientRect();
     const { offsetX, offsetY } = nativeEvent;
 
+    if (nativeEvent.button !== 0) return;
+
+
     // If mouse up, you have to stop any kind of drawing (continuation or anything else) - set isDrawingRef = false in MouseMove
-    mouseUpRef.current = true;
+    // The below two lines are given in the window's mouseup eventhandler function; So don't need them in the canvas - redundant
+    // mouseUpRef.current = true;
+    // isDrawingRef.current = mouseUpRef.current ? false : true;
+
     // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
-    if (whichShapeRef.current.pencil) { contextRef.current.beginPath(); }
+    if (whichShapeSelectedRef.current.pencil) { contextRef.current.beginPath(); }
     //
+
+    // Capture dots in the undo array when you mouseDown inside the drawable canvas
+    // -( dots are pushed only if you didn't draw a pencil curve in continuation)
+    if (!isDrawingRef.current && whichShapeSelectedRef.current.pencil) {
+
+      if (!((!colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 158, x1: rect.width - 94, y0: 0, y1: 30 },
+        { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }) &&
+        !isInsideButtonRegion({ x0: 0, x1: rect.width, y0: 30, y1: rect.height },
+          { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }))) ||
+        (colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 278, x1: rect.width - 94, y0: 0, y1: 30 },
+          { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }) &&
+          !isInsideButtonRegion({ x0: 0, x1: rect.width, y0: 30, y1: rect.height },
+            { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }))))) {
+
+        if (activeUndoRedoChainRef.current) {
+          redoRef.current.length = 0;
+        }
+        undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+        xPressedNoOtherChangesRef.current = false;
+        console.log(undoRef.current);
+      }
+    }
 
     if (buttonIsWhiteRef.current) {
       //ie; if the onMouseUp is done on the button without leaving the button after onMouseDown on that button (ie; Button is White on mouseup)
@@ -218,25 +258,37 @@ export const Canvas = () => {
 
           if (button === "x") {
             clearCanvas(contextRef.current, rect);
+
+            if (undoRef.current.length && !xPressedNoOtherChangesRef.current) {
+              if (activeUndoRedoChainRef.current) {
+                redoRef.current.length = 0;
+              }
+              undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+              console.log(undoRef.current);
+            }
+
             // To avoid pasteDrawableCanvas happening - when i click X, and click on any shape , the previous drawing comes into display.
             colorPaletteIsOnRef.current = false;
+            xPressedNoOtherChangesRef.current = true;
           }
 
+
+          //
           // Rerender the buttons which are unselected to normal mode. ie; Render all buttons in normal mode
           buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
           // Setting state on what is to be drawn
 
           if (button === "rectangle" || button === "pencil" || button === "circle" || button === "line") {
-            Object.keys(whichShapeRef.current).forEach((key) => {
-              whichShapeRef.current[key] = (key === button); // turning all others false and turning on the active button
+            Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+              whichShapeSelectedRef.current[key] = (key === button); // turning all others false and turning on the active button
             })
             if (colorPaletteIsOnRef.current) {
               pasteDrawableCanvas(contextRef.current, imgDataRef.current);
               colorPaletteIsOnRef.current = false;
             }
           } else if (button === "color") {
-            // don't lightgrey the selected whichShapeRef buttons. let it be there.
+            // don't lightgrey the selected whichShapeSelectedRef buttons. let it be there.
 
             if (colorPaletteIsOnRef.current) {
               pasteDrawableCanvas(contextRef.current, imgDataRef.current);
@@ -252,13 +304,56 @@ export const Canvas = () => {
           //
           // other shapes to be implemented
           //
-          //
 
-          /// Changing background color of selected button's button ((removed "color" button from whichShapeRef -because it's "select" &
+          // The below code is put below others because, "undo" have to pasteDrawableCanvas by overwriting others above if any ( Nothing of that
+          // is there above right now)
+          if (button === "undo") {
+            const currentContent = undoRef.current.pop();
+            xPressedNoOtherChangesRef.current = false;
+
+            if (currentContent) {
+              // if there is something in the undo array and i pressed undo button, then make the Undo-Redo chain Active
+              activeUndoRedoChainRef.current = true;
+
+              redoRef.current.push(currentContent);
+              if (undoRef.current.length) {
+                pasteDrawableCanvas(contextRef.current, undoRef.current.at(-1));
+              } else {
+                clearCanvas(contextRef.current, rect);
+                colorPaletteIsOnRef.current = false;
+              }
+            } else {
+              if (colorPaletteIsOnRef.current) {
+                clearCanvas(contextRef.current, rect);
+                colorPaletteIsOnRef.current = false;
+              }
+            }
+          }
+
+          // if you draw something, then press X, then undo, then redo, then press X again, then you will have 2 blank image datas stacked
+          // together in undoRef stack. But the user won't do like that. And if he does it, then he knows intuitively that he would have to 
+          // do 2 undos to get to the drawing he had done.
+          if (button === "redo") {
+
+            if (redoRef.current.length) {
+              xPressedNoOtherChangesRef.current = false;
+              const currentContent = redoRef.current.pop();
+
+              if (!redoRef.current.length) {
+                activeUndoRedoChainRef.current = false;
+              }
+
+              undoRef.current.push(currentContent);
+              pasteDrawableCanvas(contextRef.current, currentContent);
+
+            }
+          }
+
+          /// Changing background color of selected button's button ((removed "color" button from whichShapeSelectedRef -because it's "select" &
           // "highlight"(when palette is on) is handled by color palette. (highlight when colorPalette is off - is handled by color in buttonsRef)
           //by colorPalette))
-          Object.keys(whichShapeRef.current).forEach((key) => {
-            if (whichShapeRef.current[key]) {
+          Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+            if (whichShapeSelectedRef.current[key]) {
               buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
                 colorsRef.current[0], key);
             }
@@ -291,6 +386,7 @@ export const Canvas = () => {
         buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
           colorPaletteImgDataRef.current, colorsRef.current[0], "color");
 
+
       }
 
     }
@@ -306,17 +402,23 @@ export const Canvas = () => {
     if (buttonIsWhiteRef.current) {
       buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
-      Object.keys(whichShapeRef.current).forEach((key) => {
-        if (whichShapeRef.current[key]) {
+      Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+        if (whichShapeSelectedRef.current[key]) {
           buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
             colorPaletteImgDataRef.current, colorsRef.current[0], key);
         }
       })
+      buttonIsWhiteRef.current = false;
     }
 
     if (colorPaletteIsOnRef.current) {
       colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
     }
+
+    //  We don't want any mouseDowns outside the canvas to affect the undo array pushes -
+    // when you do mouseUp in canvas just after mouseDown outside the canvas. So we set mouseDownCoords to (-1,-1) 
+    // when you leave canvas
+    mouseDownCoordRef.current = { offsetX: -1, offsetY: -1 };
   }
 
 
@@ -345,6 +447,8 @@ export const Canvas = () => {
       x0: canvasRef.current.getBoundingClientRect().width - 30,
       x1: canvasRef.current.getBoundingClientRect().width, y0: 0, y1: 30
     }
+    buttonCoordRef.current["redo"] = { x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 }
+    buttonCoordRef.current["undo"] = { x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 }
 
 
     // create and store buttons in an object datastructure
@@ -368,9 +472,21 @@ export const Canvas = () => {
 
     // on mouseUpRef on any place on window or if the user leaves the browser, turn mouseUpRef = true
     function handleMouseUpOrLeaveWindow() {
+      if (isDrawingRef.current) {// works only for 1 mouse up outside the canvas
+
+        if (activeUndoRedoChainRef.current) {
+          redoRef.current.length = 0;
+        }
+
+        undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+        xPressedNoOtherChangesRef.current = false;
+        console.log(undoRef.current);
+      }
+
       mouseUpRef.current = true;
       //obviously, the below is true. But i wrote it for making the mouseUp control the isDrawingRef (even outside the canvas).
       isDrawingRef.current = mouseUpRef.current ? false : true;
+
     }
 
     window.addEventListener("mouseleave", handleMouseUpOrLeaveWindow);
@@ -381,23 +497,24 @@ export const Canvas = () => {
       //
       if (isDrawingRef.current) {
 
-        if (whichShapeRef.current.pencil) { /// by default, pencil is true
+        if (whichShapeSelectedRef.current.pencil) { /// by default, pencil is true
           /// for pencil === true
           drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
-        if (whichShapeRef.current.rectangle) {
+        if (whichShapeSelectedRef.current.rectangle) {
           /// for rectangle === true /// getImageData is done on MouseDown
+          //The pasteDrawableCanvas is for not rendering many rectangles
           pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawRectangle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
-        if (whichShapeRef.current.circle) {
+        if (whichShapeSelectedRef.current.circle) {
           pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawCircle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
 
-        if (whichShapeRef.current.line) {
+        if (whichShapeSelectedRef.current.line) {
           pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawLine(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
@@ -409,8 +526,8 @@ export const Canvas = () => {
         //
 
         buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
-        Object.keys(whichShapeRef.current).forEach((key) => {
-          if (whichShapeRef.current[key]) {
+        Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+          if (whichShapeSelectedRef.current[key]) {
             buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
               colorPaletteImgDataRef.current, colorsRef.current[0], key);
           }
@@ -425,11 +542,12 @@ export const Canvas = () => {
     }
     window.addEventListener("mousemove", handleMouseMoveWindow)
 
+
     //cleanup the event handlers
     return () => {
       window.removeEventListener("mouseleave", handleMouseUpOrLeaveWindow);
       window.removeEventListener("mouseup", handleMouseUpOrLeaveWindow);
-      window.addEventListener("mousemove", handleMouseMoveWindow)
+      window.removeEventListener("mousemove", handleMouseMoveWindow)
     }
   }, [])
 
