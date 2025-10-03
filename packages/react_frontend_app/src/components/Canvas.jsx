@@ -3,7 +3,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
   clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
-  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton
+  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, isEqualImgDatas
 }
   from '../services/canvasService.js';
 export const Canvas = () => {
@@ -240,6 +240,7 @@ export const Canvas = () => {
 
         if (activeUndoRedoChainRef.current) {
           redoRef.current.length = 0;
+          activeUndoRedoChainRef.current = false;
         }
         undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
         xPressedNoOtherChangesRef.current = false;
@@ -260,11 +261,21 @@ export const Canvas = () => {
             clearCanvas(contextRef.current, rect);
 
             if (undoRef.current.length && !xPressedNoOtherChangesRef.current) {
+              console.log(activeUndoRedoChainRef.current);
               if (activeUndoRedoChainRef.current) {
-                redoRef.current.length = 0;
+                // compare the previous and the last one of the undo array, then, if they are same, then don't push
+                const isSameImgDatas = isEqualImgDatas({ imgData1: undoRef.current.at(-1), imgData2: copyDrawableCanvas(contextRef.current, rect) });
+                console.log(isSameImgDatas);
+                if (!isSameImgDatas) {
+                  undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+                  console.log(undoRef.current);
+                  redoRef.current.length = 0;
+                  activeUndoRedoChainRef.current = false;
+                }
+              } else {
+                undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+                console.log(undoRef.current);
               }
-              undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
-              console.log(undoRef.current);
             }
 
             // To avoid pasteDrawableCanvas happening - when i click X, and click on any shape , the previous drawing comes into display.
@@ -307,6 +318,10 @@ export const Canvas = () => {
 
           // The below code is put below others because, "undo" have to pasteDrawableCanvas by overwriting others above if any ( Nothing of that
           // is there above right now)
+
+          //UndoRedo chain is activated-when you press undo button. It deactivates when :1) redo has reached it's end (no items in redo array)
+          //2) When you push to the undoRef stack (when you draw something or dot) except when redoing
+          //3) Initially, When there is nothing in the undoRef stack. ie; You didn't draw anything on canvas initially
           if (button === "undo") {
             const currentContent = undoRef.current.pop();
             xPressedNoOtherChangesRef.current = false;
@@ -314,8 +329,8 @@ export const Canvas = () => {
             if (currentContent) {
               // if there is something in the undo array and i pressed undo button, then make the Undo-Redo chain Active
               activeUndoRedoChainRef.current = true;
-
               redoRef.current.push(currentContent);
+
               if (undoRef.current.length) {
                 pasteDrawableCanvas(contextRef.current, undoRef.current.at(-1));
               } else {
@@ -330,18 +345,15 @@ export const Canvas = () => {
             }
           }
 
-          // if you draw something, then press X, then undo, then redo, then press X again, then you will have 2 blank image datas stacked
-          // together in undoRef stack. But the user won't do like that. And if he does it, then he knows intuitively that he would have to 
-          // do 2 undos to get to the drawing he had done.
+          // NOTE : 
+          // if you draw something, then press X, then undo, then redo, then press X again, then you will not have 2 stacked blank pages
+          // The System of Undo - Redo works perfectly right now.
           if (button === "redo") {
 
             if (redoRef.current.length) {
               xPressedNoOtherChangesRef.current = false;
               const currentContent = redoRef.current.pop();
 
-              if (!redoRef.current.length) {
-                activeUndoRedoChainRef.current = false;
-              }
 
               undoRef.current.push(currentContent);
               pasteDrawableCanvas(contextRef.current, currentContent);
@@ -476,6 +488,7 @@ export const Canvas = () => {
 
         if (activeUndoRedoChainRef.current) {
           redoRef.current.length = 0;
+          activeUndoRedoChainRef.current = false;
         }
 
         undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));

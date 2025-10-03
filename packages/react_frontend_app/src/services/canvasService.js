@@ -542,3 +542,18 @@ export const pasteDrawableCanvas = (ctx, drawableCanvasImgDataArray) => {
   ctx.putImageData(drawableCanvasImgDataArray[1], 158, 0);
 }
 
+export const isEqualImgDatas = ({ imgData1, imgData2 }) => {
+  for (let i = 0; i < imgData1[0].data.length; i++) {
+    if (imgData1[0].data[i] !== imgData2[0].data[i]) {
+      return false;
+    }
+  }
+
+  for (let i = 0; i < imgData1[1].data.length; i++) {
+    if (imgData1[1].data[i] !== imgData2[1].data[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
