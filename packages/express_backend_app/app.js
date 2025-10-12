@@ -79,6 +79,8 @@ app.options('/*splat', preflightOptionsSetter);
 app.post('/draw-login', corsAllowResponseSetter, googleJwtVerifyPost, jwtRefreshTokenCreatorPost);
 app.get('/draw-secure', corsAllowResponseSetter, rotatingRefreshTokenAndJwt, secureRouteGet);
 app.post("/draw-secure", corsAllowResponseSetter, rotatingRefreshTokenAndJwt);
+
+// app.post("/draw-secure/draw", corsAllowResponseSetter, drawPost);
 //Can use the rotatingRefreshTokenAndJwt controller for any website which needs Rotating Refresh token system
 
 

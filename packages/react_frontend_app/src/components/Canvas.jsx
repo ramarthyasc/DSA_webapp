@@ -3,9 +3,10 @@ import { useRef, useEffect, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
   clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
-  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, isEqualImgDatas
+  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray
 }
   from '../services/canvasService.js';
+
 export const Canvas = () => {
   const canvasRef = useRef();
   const contextRef = useRef();
@@ -53,16 +54,63 @@ export const Canvas = () => {
   // [1,2,3,4,5,6,7,8,9,10]
   const undoRef = useRef([]);
   const redoRef = useRef([]);
-  const xPressedNoOtherChangesRef = useRef(false);
+  // const xPressedNoOtherChangesRef = useRef(false);
   const activeUndoRedoChainRef = useRef(false);
+
+  const shapePrototypesRef = useRef({
+    pencilDot: {
+      type: "pencilDot",
+      color: null,
+      props: []
+    },
+    pencilDraw: {
+      type: "pencilDraw",
+      color: null,
+      start: [],
+      props: []
+    },
+    rectangle: {
+      type: "rectangle",
+      color: null,
+      props: [] // xinit, yinit, width, height
+    },
+    circle: {
+      type: "circle",
+      color: null,
+      props: []
+    },
+    line: {
+      type: "line",
+      color: null,
+      props: []
+    },
+    x: {
+      type: "x"
+    },
+  })
+
+  //only if I hadn't set undoRedoArray in local storage, then only implement the below.
+  if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
+    window.localStorage.setItem("undoRedoArray", JSON.stringify([]));
+    window.localStorage.setItem("undoRedoArrayPointer", -1);
+  }
+
+  const undoRedoArrayPusher = (shapePrototypesRef, shape) => {
+    const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+    const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+    // insert in the Undo array - the shapes that we drawn :- as a stack
+    const shapeProtCopy = structuredClone(shapePrototypesRef[shape]);
+    // shapePrototypes should have pencilDraw object where, it's props have stored all the points until mouseup
+    // If mouseUp, then call this function with "pencilDraw" as shape
+    undoRedoArray.push(shapeProtCopy);
+    window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
+    window.localStorage.setItem("undoRedoArrayPointer", undoRedoArrayPointer + 1);
+  }
 
 
   const handleMouseMove = ({ nativeEvent }) => {
-
     const rect = canvasRef.current.getBoundingClientRect();
     const { offsetX, offsetY } = nativeEvent;
-
-
 
     if (buttonIsWhiteRef.current) {
       const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
@@ -93,8 +141,6 @@ export const Canvas = () => {
           buttonIsWhiteRef.current = false;
         }
       }
-
-
     }
 
 
@@ -185,7 +231,8 @@ export const Canvas = () => {
     if (whichShapeSelectedRef.current.pencil) {
       /// if pencil is selected
       shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
-      drawDot(contextRef.current, { offsetX, offsetY });
+      // drawDot(contextRef.current, { offsetX, offsetY });
+      shapePrototypesRef.current.pencilDraw.start = [offsetX, offsetY];
       startPencilDraw(contextRef.current, { offsetX, offsetY });
     }
 
@@ -221,9 +268,6 @@ export const Canvas = () => {
     // mouseUpRef.current = true;
     // isDrawingRef.current = mouseUpRef.current ? false : true;
 
-    // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
-    if (whichShapeSelectedRef.current.pencil) { contextRef.current.beginPath(); }
-    //
 
     // Capture dots in the undo array when you mouseDown inside the drawable canvas
     // -( dots are pushed only if you didn't draw a pencil curve in continuation)
@@ -238,13 +282,26 @@ export const Canvas = () => {
           !isInsideButtonRegion({ x0: 0, x1: rect.width, y0: 30, y1: rect.height },
             { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }))))) {
 
-        if (activeUndoRedoChainRef.current) {
-          redoRef.current.length = 0;
-          activeUndoRedoChainRef.current = false;
+        const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+        const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+
+        if (undoRedoArrayPointer < undoRedoArray.length - 1) {
+          //set the array to the length at which the pointer is on right now
+          undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
+          window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
         }
-        undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
-        xPressedNoOtherChangesRef.current = false;
-        console.log(undoRef.current);
+
+
+        drawDot(contextRef.current, { offsetX, offsetY });
+        // undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
+
+        //
+        shapePrototypesRef.current.pencilDot.props = [offsetX, offsetY];
+        shapePrototypesRef.current.pencilDot.color = colorsRef.current[0];
+        undoRedoArrayPusher(shapePrototypesRef.current, "pencilDot");
+        //
+
+        console.log(JSON.parse(window.localStorage.getItem("undoRedoArray")));
       }
     }
 
@@ -260,27 +317,23 @@ export const Canvas = () => {
           if (button === "x") {
             clearCanvas(contextRef.current, rect);
 
-            if (undoRef.current.length && !xPressedNoOtherChangesRef.current) {
-              console.log(activeUndoRedoChainRef.current);
-              if (activeUndoRedoChainRef.current) {
-                // compare the previous and the last one of the undo array, then, if they are same, then don't push
-                const isSameImgDatas = isEqualImgDatas({ imgData1: undoRef.current.at(-1), imgData2: copyDrawableCanvas(contextRef.current, rect) });
-                console.log(isSameImgDatas);
-                if (!isSameImgDatas) {
-                  undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
-                  console.log(undoRef.current);
-                  redoRef.current.length = 0;
-                  activeUndoRedoChainRef.current = false;
+            const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+            const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+
+            if (undoRedoArrayPointer != -1 && undoRedoArray.length) {
+              // compare the previous and the last one of the undo array, then, if they are same, then don't push
+              if (undoRedoArray[undoRedoArrayPointer].type !== "x") {
+                if (undoRedoArrayPointer < undoRedoArray.length - 1) {
+                  undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
+                  window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
                 }
-              } else {
-                undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
-                console.log(undoRef.current);
+                undoRedoArrayPusher(shapePrototypesRef.current, "x");
+                console.log(JSON.parse(window.localStorage.getItem("undoRedoArray")));
               }
             }
-
             // To avoid pasteDrawableCanvas happening - when i click X, and click on any shape , the previous drawing comes into display.
             colorPaletteIsOnRef.current = false;
-            xPressedNoOtherChangesRef.current = true;
+            // xPressedNoOtherChangesRef.current = true;
           }
 
 
@@ -307,6 +360,7 @@ export const Canvas = () => {
             } else {
               /// copy the contents - before displaying the color palette
               imgDataRef.current = copyDrawableCanvas(contextRef.current, rect);
+
               // Render the color palette including the first selected dark grey bg color
               colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
               colorPaletteIsOnRef.current = true
@@ -323,25 +377,23 @@ export const Canvas = () => {
           //2) When you push to the undoRef stack (when you draw something or dot) except when redoing
           //3) Initially, When there is nothing in the undoRef stack. ie; You didn't draw anything on canvas initially
           if (button === "undo") {
-            const currentContent = undoRef.current.pop();
-            xPressedNoOtherChangesRef.current = false;
 
-            if (currentContent) {
-              // if there is something in the undo array and i pressed undo button, then make the Undo-Redo chain Active
-              activeUndoRedoChainRef.current = true;
-              redoRef.current.push(currentContent);
+            clearCanvas(contextRef.current, rect);
+            // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed
+            colorPaletteIsOnRef.current = false;
 
-              if (undoRef.current.length) {
-                pasteDrawableCanvas(contextRef.current, undoRef.current.at(-1));
-              } else {
-                clearCanvas(contextRef.current, rect);
-                colorPaletteIsOnRef.current = false;
-              }
-            } else {
-              if (colorPaletteIsOnRef.current) {
-                clearCanvas(contextRef.current, rect);
-                colorPaletteIsOnRef.current = false;
-              }
+            let undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+            if (undoRedoArrayPointer >= 0) {
+              window.localStorage.setItem("undoRedoArrayPointer", undoRedoArrayPointer - 1);
+              undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+            }
+
+            if (undoRedoArrayPointer >= 0) {
+
+              drawUndoRedoArray("undo", contextRef.current, rect, clearCanvas, setDrawProps,
+                { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
             }
           }
 
@@ -350,14 +402,27 @@ export const Canvas = () => {
           // The System of Undo - Redo works perfectly right now.
           if (button === "redo") {
 
-            if (redoRef.current.length) {
-              xPressedNoOtherChangesRef.current = false;
-              const currentContent = redoRef.current.pop();
+            // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed
+            if (colorPaletteIsOnRef.current) {
+              pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+              colorPaletteIsOnRef.current = false;
+            }
 
+            const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+            let undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
 
-              undoRef.current.push(currentContent);
-              pasteDrawableCanvas(contextRef.current, currentContent);
+            window.localStorage.setItem("undoRedoArrayPointer", undoRedoArrayPointer + 1);
 
+            undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+
+            // if the pointer didn't cross the last element of array
+            if (undoRedoArrayPointer < undoRedoArray.length) {
+              drawUndoRedoArray("redo", contextRef.current, rect, clearCanvas, setDrawProps,
+                { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
+            } else {
+              window.localStorage.setItem("undoRedoArrayPointer", undoRedoArrayPointer - 1);
             }
           }
 
@@ -442,11 +507,12 @@ export const Canvas = () => {
     //get the size of the canvas right now
     const rect = canvas.getBoundingClientRect();
     const scale = window.devicePixelRatio;
-    // This gives the pixel density of the canvas
+    // This makes the no. of css pixels in the width (canvas.width) and height (canvas.height) equal to the no. of physical pixels.
     canvas.width = Math.floor(rect.width * scale);
     canvas.height = Math.floor(rect.height * scale);
 
-    // When we draw anything in the context, it scales it realtime
+    // When we draw anything in the context using the rect (css) pixels, it scales it realtime to match the no. of physical pixels. So increase
+    // clarity by making the DevicePixelRatio to 1:1. Higher ratio means more clarity
     ctx.scale(scale, scale);
 
 
@@ -473,6 +539,20 @@ export const Canvas = () => {
     /// drawPencil is active by default. So color the button bg
     buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
 
+    //Render the current drawing in the canvas
+
+    const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+    if (undoRedoArrayPointer >= 0) {
+      drawUndoRedoArray("undo", contextRef.current, rect, clearCanvas, setDrawProps,
+        { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+      Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+        if (whichShapeSelectedRef.current[key]) {
+          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
+            colorsRef.current[0], key);
+        }
+      })
+    }
 
 
   }, [])
@@ -483,17 +563,41 @@ export const Canvas = () => {
     const rect = canvasRef.current.getBoundingClientRect();
 
     // on mouseUpRef on any place on window or if the user leaves the browser, turn mouseUpRef = true
-    function handleMouseUpOrLeaveWindow() {
+    function handleMouseUpOrLeaveWindow(e) {
+
+      // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
+      if (whichShapeSelectedRef.current.pencil) { contextRef.current.beginPath(); }
+      //
+
       if (isDrawingRef.current) {// works only for 1 mouse up outside the canvas
 
-        if (activeUndoRedoChainRef.current) {
-          redoRef.current.length = 0;
-          activeUndoRedoChainRef.current = false;
+        let undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+        const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+
+        if (undoRedoArrayPointer < undoRedoArray.length - 1) {
+          undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
+          window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
         }
 
-        undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
-        xPressedNoOtherChangesRef.current = false;
-        console.log(undoRef.current);
+
+        if (whichShapeSelectedRef.current.rectangle || whichShapeSelectedRef.current.circle || whichShapeSelectedRef.current.line) {
+
+          const whichShapeSelected = Object.keys(whichShapeSelectedRef.current).find((key) => {
+            return whichShapeSelectedRef.current[key];
+          })
+          shapePrototypesRef.current[whichShapeSelected].props = [e.clientX, e.clientY, shapeInitialCoordRef.current];
+          shapePrototypesRef.current[whichShapeSelected].color = colorsRef.current[0];
+          undoRedoArrayPusher(shapePrototypesRef.current, whichShapeSelected);
+
+        } else if (whichShapeSelectedRef.current.pencil) {
+
+          shapePrototypesRef.current.pencilDraw.color = colorsRef.current[0];
+          undoRedoArrayPusher(shapePrototypesRef.current, "pencilDraw");
+          //reset the shapePrototypesRef to []
+          shapePrototypesRef.current.pencilDraw.props = [];
+        }
+
+        console.log(JSON.parse(window.localStorage.getItem("undoRedoArray")));
       }
 
       mouseUpRef.current = true;
@@ -513,6 +617,7 @@ export const Canvas = () => {
         if (whichShapeSelectedRef.current.pencil) { /// by default, pencil is true
           /// for pencil === true
           drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+          shapePrototypesRef.current.pencilDraw.props.push([e.clientX, e.clientY, shapeInitialCoordRef.current]);
         }
 
         if (whichShapeSelectedRef.current.rectangle) {
@@ -545,9 +650,6 @@ export const Canvas = () => {
               colorPaletteImgDataRef.current, colorsRef.current[0], key);
           }
         })
-        // if (colorPaletteIsOnRef.current) {
-        //   colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
-        // }
 
       }
 
@@ -564,6 +666,7 @@ export const Canvas = () => {
     }
   }, [])
 
+  console.log(window.localStorage.getItem("undoRedoArrayPointer"));
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
     onMouseLeave={handleMouseLeave} />

@@ -482,10 +482,12 @@ export const clearCanvas = (ctx, rect) => {
   ctx.clearRect(0, 30, rect.width, rect.height - 30);
 }
 
-export const setDrawProps = (ctx, { lineWidth = 1, color = "black" }) => {
+export const setDrawProps = (ctx, { lineWidth = 1, color = "black", lineCap = "round", lineJoin = "round" }) => {
   ctx.lineWidth = lineWidth;
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
+  ctx.lineCap = lineCap;
+  ctx.lineJoin = lineJoin;
   // color
   // etc.. properties
 }
@@ -556,4 +558,61 @@ export const isEqualImgDatas = ({ imgData1, imgData2 }) => {
   }
 
   return true;
+}
+
+export const drawUndoRedoArray = (undoOrRedo, ctx, rect, clearCanvas, setDrawProps,
+  { drawRectangle, drawCircle, drawLine, drawPencil, drawDot }) => {
+  ctx.save();
+
+  const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+  const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+
+  if (undoOrRedo === "undo") {
+    for (let i = 0; i <= undoRedoArrayPointer; i++) {
+      const shapeObject = undoRedoArray[i];
+      // you can give lineWidth to shapePrototypes and then give shapeObject.lineWidth here - if needed. Until then. It's hardcoded
+      setDrawProps(ctx, { lineWidth: 4, color: shapeObject.color });
+
+      if (shapeObject.type === "rectangle") {
+        drawRectangle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      } else if (shapeObject.type === "circle") {
+        drawCircle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      } else if (shapeObject.type === "line") {
+        drawLine(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      } else if (shapeObject.type === "pencilDraw") {
+        startPencilDraw(ctx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
+        for (let [clientX, clientY, initCoord] of shapeObject.props) {
+          drawPencil(ctx, { clientX: clientX, clientY: clientY }, initCoord);
+        }
+        ctx.beginPath();
+      } else if (shapeObject.type === "pencilDot") {
+        drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
+      } else if (shapeObject.type === "x") {
+        clearCanvas(ctx, rect);
+      }
+    }
+  } else if (undoOrRedo === "redo") {
+    const shapeObject = undoRedoArray[undoRedoArrayPointer];
+    setDrawProps(ctx, { lineWidth: 4, color: shapeObject.color });
+    if (shapeObject.type === "rectangle") {
+      drawRectangle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+    } else if (shapeObject.type === "circle") {
+      drawCircle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+    } else if (shapeObject.type === "line") {
+      drawLine(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+    } else if (shapeObject.type === "pencilDraw") {
+      startPencilDraw(ctx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
+      for (let [clientX, clientY, initCoord] of shapeObject.props) {
+        drawPencil(ctx, { clientX: clientX, clientY: clientY }, initCoord);
+      }
+      ctx.beginPath();
+    } else if (shapeObject.type === "pencilDot") {
+      drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
+    } else if (shapeObject.type === "x") {
+      clearCanvas(ctx, rect);
+    }
+  }
+
+  ctx.restore();
+
 }
