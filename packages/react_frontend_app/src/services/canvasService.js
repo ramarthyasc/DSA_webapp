@@ -566,9 +566,13 @@ export const drawUndoRedoArray = (undoOrRedo, ctx, rect, clearCanvas, setDrawPro
 
   const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
   const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+  const xPreviousPosition = Number(window.localStorage.getItem("xPreviousPosition"));
 
   if (undoOrRedo === "undo") {
-    for (let i = 0; i <= undoRedoArrayPointer; i++) {
+    let i = 0;
+    // start the drawings from the previous X (To increase performance of Undos)
+    if (xPreviousPosition !== -1 && xPreviousPosition <= undoRedoArrayPointer) { i = xPreviousPosition + 1; }
+    for (i; i <= undoRedoArrayPointer; i++) {
       const shapeObject = undoRedoArray[i];
       // you can give lineWidth to shapePrototypes and then give shapeObject.lineWidth here - if needed. Until then. It's hardcoded
       setDrawProps(ctx, { lineWidth: 4, color: shapeObject.color });

@@ -93,7 +93,7 @@ export const Canvas = () => {
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
     window.localStorage.setItem("undoRedoArray", JSON.stringify([]));
     window.localStorage.setItem("undoRedoArrayPointer", -1);
-    window.localStorage.setItem("xPreviousPosition", JSON.stringify(null));
+    window.localStorage.setItem("xPreviousPosition", -1);
   }
 
   const undoRedoArrayPusher = (shapePrototypesRef, shape) => {
@@ -336,7 +336,7 @@ export const Canvas = () => {
                 // if previous position of 'X' is before the undoRedoArrayPointer,then delete all the elements before "X", including "X"
                 // in the undoRedoArray
                 let xPreviousPosition = Number(window.localStorage.getItem("xPreviousPosition"));
-                if (xPreviousPosition && (xPreviousPosition < undoRedoArrayPointer)) {
+                if (xPreviousPosition !== -1 && (xPreviousPosition < undoRedoArrayPointer)) {
                   undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
 
                   let tempUndoRedoArray = [];
