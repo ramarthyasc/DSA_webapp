@@ -7,6 +7,10 @@ import {
 }
   from '../services/canvasService.js';
 
+// NOTE : When you do 'X', and you have an 'X' already in the array behind the current 'X', then clear the previous 'X'
+// and elements before them
+// ie; There will be only one "X" in the array at a time.
+
 export const Canvas = () => {
   const canvasRef = useRef();
   const contextRef = useRef();
@@ -52,10 +56,6 @@ export const Canvas = () => {
   const imgDataRef = useRef([]);
   // Undo :
   // [1,2,3,4,5,6,7,8,9,10]
-  const undoRef = useRef([]);
-  const redoRef = useRef([]);
-  // const xPressedNoOtherChangesRef = useRef(false);
-  const activeUndoRedoChainRef = useRef(false);
 
   const shapePrototypesRef = useRef({
     pencilDot: {
@@ -93,6 +93,7 @@ export const Canvas = () => {
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
     window.localStorage.setItem("undoRedoArray", JSON.stringify([]));
     window.localStorage.setItem("undoRedoArrayPointer", -1);
+    window.localStorage.setItem("xPreviousPosition", JSON.stringify(null));
   }
 
   const undoRedoArrayPusher = (shapePrototypesRef, shape) => {
@@ -317,23 +318,47 @@ export const Canvas = () => {
           if (button === "x") {
             clearCanvas(contextRef.current, rect);
 
-            const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
-            const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+            let undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+            let undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
 
             if (undoRedoArrayPointer != -1 && undoRedoArray.length) {
               // compare the previous and the last one of the undo array, then, if they are same, then don't push
               if (undoRedoArray[undoRedoArrayPointer].type !== "x") {
+
+
+                // NOTE : When you do 'X', and you have an 'X' already in the array behind the current 'X', then clear the previous 'X'
+                // and elements before them
+
                 if (undoRedoArrayPointer < undoRedoArray.length - 1) {
                   undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
                   window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
                 }
+                // if previous position of 'X' is before the undoRedoArrayPointer,then delete all the elements before "X", including "X"
+                // in the undoRedoArray
+                let xPreviousPosition = Number(window.localStorage.getItem("xPreviousPosition"));
+                if (xPreviousPosition && (xPreviousPosition < undoRedoArrayPointer)) {
+                  undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
+
+                  let tempUndoRedoArray = [];
+                  for (let i = xPreviousPosition + 1; i <= undoRedoArrayPointer; i++) {
+                    tempUndoRedoArray.push(undoRedoArray[i]);
+                  }
+                  window.localStorage.setItem("undoRedoArray", JSON.stringify(tempUndoRedoArray));
+                  window.localStorage.setItem("undoRedoArrayPointer", tempUndoRedoArray.length - 1);
+                }
+
                 undoRedoArrayPusher(shapePrototypesRef.current, "x");
+
+                //xPreviousPosition is set
+                undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+                window.localStorage.setItem("xPreviousPosition", undoRedoArrayPointer);
+
+
                 console.log(JSON.parse(window.localStorage.getItem("undoRedoArray")));
               }
             }
             // To avoid pasteDrawableCanvas happening - when i click X, and click on any shape , the previous drawing comes into display.
             colorPaletteIsOnRef.current = false;
-            // xPressedNoOtherChangesRef.current = true;
           }
 
 
@@ -400,6 +425,7 @@ export const Canvas = () => {
           // NOTE : 
           // if you draw something, then press X, then undo, then redo, then press X again, then you will not have 2 stacked blank pages
           // The System of Undo - Redo works perfectly right now.
+          // ie; There will be only one "X" in the array at a time.
           if (button === "redo") {
 
             // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed

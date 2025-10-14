@@ -5,7 +5,7 @@ const { userListGet, userCreateGet, userCreatePost, userAdminGet,
   require('../controller/userbaseController.js')
 
 userbaseRouter.use((req, res, next) => {
-  res.locals.baseUrl = req.baseUrl; //manually created 'baseUrl' property in res.locals, and gave it's value as req.baseUrl
+  res.locals.baseUrl = req.baseUrl; //manually created 'baseUrl' property in res.locals, and gave it's value as that of req.baseUrl
   next();
 })
 

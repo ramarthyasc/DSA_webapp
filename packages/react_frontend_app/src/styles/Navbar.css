@@ -8,7 +8,7 @@
   position: relative;
   justify-content: right;
   background: linear-gradient(to right, #FFD469, #f9a66c);
-  clip-path: ellipse(69.48% 50% at 26.23% 50.00%);
+  /* clip-path: ellipse(69.48% 50% at 26.23% 50.00%); */
   height: 5vh;
 
 }
@@ -19,7 +19,7 @@
 
 @media only screen and (max-width: 430px) {
   .nav {
-    clip-path: ellipse(69.48% 33.91% at 25.12% 22.03%);
+    /* clip-path: ellipse(69.48% 33.91% at 25.12% 22.03%); */
     height: 8vh;
   }
 

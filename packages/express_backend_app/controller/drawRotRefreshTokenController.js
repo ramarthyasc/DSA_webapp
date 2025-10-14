@@ -32,6 +32,7 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
   //--------- If: Refresh token is Invalid (revoked) or Expired(Absolute or Relative), (ie; Revoked RT or Different RT) (HACKED !!!! - REPLAY ATTACK), Logout the user from all browsers.
   //          ie; Revoke (revoked = true) current Refresh Token of hacker (A user will have one active Refresh token per each browser). That's it.
   //--------- Else (Refresh token is Valid and not Expired): 
+  //After Absolute expiry, a user absolutely have to signin once more. (This is applicable for all users (hackers too));
 
   const detailRefreshToken = await verifyValidityExpiryRevokeRTService(refreshToken, searchRefreshToken, revokeRefreshToken);
 
