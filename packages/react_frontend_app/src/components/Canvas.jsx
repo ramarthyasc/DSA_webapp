@@ -170,6 +170,7 @@ export const Canvas = () => {
     if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
       isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
       //if the cursor is inside any button area
+      console.log("hello");
       for (let button in buttonsRef.current) {
         if (isInsideButtonRegion({
           x0: buttonCoordRef.current[button].x0, x1: buttonCoordRef.current[button].x1,
@@ -180,10 +181,10 @@ export const Canvas = () => {
             colorsRef.current[0], button);
 
           buttonIsWhiteRef.current = true;
-          mouseUpRef.current = true; // if there was any white button displayed, then we are starting a new drawing(not continuation). So it acts like
-          //mouseup
         }
       }
+      mouseUpRef.current = true; // if there was any white button displayed or did click on button area, 
+      // then we are starting a new drawing(not continuation). So it acts like mouseup
       return;
     }
 
@@ -213,7 +214,6 @@ export const Canvas = () => {
     //
     // As there are 'return's above if cursor is in the button area/ color area[when activated], the code below WORKS ONLY FOR DRAWABLE CANVAS !!!
     // Initiating the Drawing on drawable canvas when clicking on the drawable canvas
-
 
     if (colorPaletteIsOnRef.current) {
       // Paste the previous drawable canvas if there is palette present
@@ -285,11 +285,16 @@ export const Canvas = () => {
 
         const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
         const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+        const xPreviousPosition = Number(window.localStorage.getItem("xPreviousPosition"));
 
         if (undoRedoArrayPointer < undoRedoArray.length - 1) {
           //set the array to the length at which the pointer is on right now
           undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
           window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
+        }
+        //if the pointer is before the xPreviousPosition, then set xPreviousPosition to -1 as there is no X position now.
+        if (xPreviousPosition >= 0 && xPreviousPosition > undoRedoArrayPointer) {
+          window.localStorage.setItem("xPreviousPosition", -1);
         }
 
 
@@ -599,10 +604,15 @@ export const Canvas = () => {
 
         let undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
         const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
+        const xPreviousPosition = Number(window.localStorage.getItem("xPreviousPosition"));
 
         if (undoRedoArrayPointer < undoRedoArray.length - 1) {
           undoRedoArray.length = undoRedoArrayPointer + 1; // pointerRed is 0 based index
           window.localStorage.setItem("undoRedoArray", JSON.stringify(undoRedoArray));
+        }
+        //if the pointer is before the xPreviousPosition, then set xPreviousPosition to -1 as there is no X position now.
+        if (xPreviousPosition >= 0 && xPreviousPosition > undoRedoArrayPointer) {
+          window.localStorage.setItem("xPreviousPosition", -1);
         }
 
 
