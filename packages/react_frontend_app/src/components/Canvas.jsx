@@ -110,21 +110,22 @@ export const Canvas = () => {
 
 
   const handleMouseMove = ({ nativeEvent }) => {
-    const rect = canvasRef.current.getBoundingClientRect();
+    // const rect = canvasRef.current.getBoundingClientRect();
+    const style = getComputedStyle(canvasRef.current);
     const { offsetX, offsetY } = nativeEvent;
 
     if (buttonIsWhiteRef.current) {
-      const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, rect, isInsideButtonRegion);
-      const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, rect, isInsideButtonRegion);
+      const prevMouseDownButton = buttonFinder(mouseDownCoordRef.current, style, isInsideButtonRegion);
+      const isOutsidePrevMouseDownButton = isOutsideButton(prevMouseDownButton, { offsetX, offsetY }, style, isInsideButtonRegion);
 
       // If Mouse pointer is outside that button where previous mouse down happened, then rerender the button to normal
       if (isOutsidePrevMouseDownButton) {
-        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+        buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true },
           colorPaletteImgDataRef.current, colorsRef.current[0], prevMouseDownButton);
 
         Object.keys(whichShapeSelectedRef.current).forEach((key) => {
           if (whichShapeSelectedRef.current[key]) {
-            buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true },
               colorPaletteImgDataRef.current, colorsRef.current[0], key);
           }
         })
@@ -154,7 +155,9 @@ export const Canvas = () => {
   }
 
   const handleMouseDown = ({ nativeEvent }) => {
-    const rect = canvasRef.current.getBoundingClientRect();
+    // const rect = canvasRef.current.getBoundingClientRect();
+    const style = getComputedStyle(canvasRef.current);
+    const width = parseFloat(style.width);
     const { offsetX, offsetY, clientX, clientY } = nativeEvent;
 
     // Iam giving coordinates with negatives for the canvas here.
@@ -168,7 +171,7 @@ export const Canvas = () => {
 
     // button highlighting: start
     if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
-      isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
+      isInsideButtonRegion({ x0: width - 94, x1: width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
       //if the cursor is inside any button area
       for (let button in buttonsRef.current) {
         if (isInsideButtonRegion({
@@ -176,7 +179,7 @@ export const Canvas = () => {
           y0: buttonCoordRef.current[button].y0, y1: buttonCoordRef.current[button].y1
         }, { offsetX, offsetY })) {
 
-          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { highlight: true }, colorPaletteImgDataRef.current,
+          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { highlight: true }, colorPaletteImgDataRef.current,
             colorsRef.current[0], button);
 
           buttonIsWhiteRef.current = true;
@@ -218,7 +221,7 @@ export const Canvas = () => {
       // Paste the previous drawable canvas if there is palette present
       pasteDrawableCanvas(contextRef.current, imgDataRef.current);
       // Then normalize the background color of just "color" button
-      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+      buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true },
         colorPaletteImgDataRef.current, colorsRef.current[0], "color");
 
       colorPaletteIsOnRef.current = false;
@@ -240,7 +243,7 @@ export const Canvas = () => {
       /// if rectangle or one of other shapes is selected
 
       /// screenshotting the canvas before drawing the rectangle
-      imgDataRef.current = copyDrawableCanvas(contextRef.current, rect);
+      imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
       /// Saving the clicked coordinates
       shapeInitialCoordRef.current = { xOffset: offsetX, yOffset: offsetY, xClient: clientX, yClient: clientY };
 
@@ -257,7 +260,10 @@ export const Canvas = () => {
 
   const handleMouseUp = ({ nativeEvent }) => {
 
-    const rect = canvasRef.current.getBoundingClientRect();
+    // const rect = canvasRef.current.getBoundingClientRect();
+    const style = getComputedStyle(canvasRef.current);
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
     const { offsetX, offsetY } = nativeEvent;
 
     if (nativeEvent.button !== 0) return;
@@ -273,13 +279,13 @@ export const Canvas = () => {
     // -( dots are pushed only if you didn't draw a pencil curve in continuation)
     if (!isDrawingRef.current && whichShapeSelectedRef.current.pencil) {
 
-      if (!((!colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 158, x1: rect.width - 94, y0: 0, y1: 30 },
+      if (!((!colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 158, x1: width - 94, y0: 0, y1: 30 },
         { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }) &&
-        !isInsideButtonRegion({ x0: 0, x1: rect.width, y0: 30, y1: rect.height },
+        !isInsideButtonRegion({ x0: 0, x1: width, y0: 30, y1: height },
           { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }))) ||
-        (colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 278, x1: rect.width - 94, y0: 0, y1: 30 },
+        (colorPaletteIsOnRef.current && (!isInsideButtonRegion({ x0: 278, x1: width - 94, y0: 0, y1: 30 },
           { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }) &&
-          !isInsideButtonRegion({ x0: 0, x1: rect.width, y0: 30, y1: rect.height },
+          !isInsideButtonRegion({ x0: 0, x1: width, y0: 30, y1: height },
             { offsetX: mouseDownCoordRef.current.offsetX, offsetY: mouseDownCoordRef.current.offsetY }))))) {
 
         const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
@@ -298,7 +304,6 @@ export const Canvas = () => {
 
 
         drawDot(contextRef.current, { offsetX, offsetY });
-        // undoRef.current.push(copyDrawableCanvas(contextRef.current, rect));
 
         //
         shapePrototypesRef.current.pencilDot.props = [offsetX, offsetY];
@@ -320,7 +325,7 @@ export const Canvas = () => {
         }, { offsetX, offsetY })) {
 
           if (button === "x") {
-            clearCanvas(contextRef.current, rect);
+            clearCanvas(contextRef.current, style);
 
             let undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
             let undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
@@ -368,7 +373,7 @@ export const Canvas = () => {
 
           //
           // Rerender the buttons which are unselected to normal mode. ie; Render all buttons in normal mode
-          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
           // Setting state on what is to be drawn
 
@@ -388,7 +393,7 @@ export const Canvas = () => {
               colorPaletteIsOnRef.current = false;
             } else {
               /// copy the contents - before displaying the color palette
-              imgDataRef.current = copyDrawableCanvas(contextRef.current, rect);
+              imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
 
               // Render the color palette including the first selected dark grey bg color
               colorPaletteRender(contextRef.current, colorsRef.current, colorPaletteCoords, colorPaletteImgDataRef.current);
@@ -407,7 +412,7 @@ export const Canvas = () => {
           //3) Initially, When there is nothing in the undoRef stack. ie; You didn't draw anything on canvas initially
           if (button === "undo") {
 
-            clearCanvas(contextRef.current, rect);
+            clearCanvas(contextRef.current, style);
             // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed
             colorPaletteIsOnRef.current = false;
 
@@ -419,9 +424,9 @@ export const Canvas = () => {
 
             if (undoRedoArrayPointer >= 0) {
 
-              drawUndoRedoArray("undo", contextRef.current, rect, clearCanvas, setDrawProps,
+              drawUndoRedoArray("undo", contextRef.current, style, clearCanvas, setDrawProps,
                 { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
-              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+              buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             }
           }
@@ -447,9 +452,9 @@ export const Canvas = () => {
 
             // if the pointer didn't cross the last element of array
             if (undoRedoArrayPointer < undoRedoArray.length) {
-              drawUndoRedoArray("redo", contextRef.current, rect, clearCanvas, setDrawProps,
+              drawUndoRedoArray("redo", contextRef.current, style, clearCanvas, setDrawProps,
                 { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
-              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+              buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             } else {
               window.localStorage.setItem("undoRedoArrayPointer", undoRedoArrayPointer - 1);
@@ -461,7 +466,7 @@ export const Canvas = () => {
           //by colorPalette))
           Object.keys(whichShapeSelectedRef.current).forEach((key) => {
             if (whichShapeSelectedRef.current[key]) {
-              buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
+              buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
                 colorsRef.current[0], key);
             }
           })
@@ -490,7 +495,7 @@ export const Canvas = () => {
 
         colorPaletteIsOnRef.current = false;
 
-        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true },
+        buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true },
           colorPaletteImgDataRef.current, colorsRef.current[0], "color");
 
 
@@ -504,14 +509,15 @@ export const Canvas = () => {
 
   const handleMouseLeave = () => {
 
-    const rect = canvasRef.current.getBoundingClientRect();
+    // const rect = canvasRef.current.getBoundingClientRect();
+    const style = getComputedStyle(canvasRef.current);
 
     if (buttonIsWhiteRef.current) {
-      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+      buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
       Object.keys(whichShapeSelectedRef.current).forEach((key) => {
         if (whichShapeSelectedRef.current[key]) {
-          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true },
             colorPaletteImgDataRef.current, colorsRef.current[0], key);
         }
       })
@@ -533,16 +539,42 @@ export const Canvas = () => {
     // Initialize the Canvas
     //
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    //get the size of the canvas right now
-    const rect = canvas.getBoundingClientRect();
+    //get the size of the canvas's content box only. Not including border or padding. --VERY IMPORTANT
+    const style = getComputedStyle(canvas);
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
     const scale = window.devicePixelRatio;
-    // This makes the no. of css pixels in the width (canvas.width) and height (canvas.height) equal to the no. of physical pixels.
-    canvas.width = Math.floor(rect.width * scale);
-    canvas.height = Math.floor(rect.height * scale);
+    // This makes the no. of canvas pixels [internal bitmap of canvas] 
+    // in the width (canvas.width) and height (canvas.height) equal to the no. of physical pixels. Thus increasing clarity.
+    //
+    //
+    // CSS PIXEL = pixels that the whole webpage is made of
+    //
+    // CANVAS PIXEL = (canvas.width, canvas.height) pixels that the canvas is made of -- NOTE: IMPPPPP PLAYER
+    // PHYSICAL PIXEL = the pixels that the physical screen is made out of
+    // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas. ie; CSS/VISUAL PIXELS in the Canvas area. -- NOTE : IMPPPP PLAYER
+    // We can change how many CSS/visual pixels are there in the canvas area. Using ctx.
+    // 
+    // For example, the portion of the canvas can have width of 600 CSS pixels.
+    // The canvas will be 1200 Canvas pixels - on which we draw.
+    // But the coordinates are numbers given by us. For example when i click on (300, 200) on the canvas (We always reference coordinates wrt
+    // the CSS pixels.), ie; i Click midway wrt width on the the canvas, the drawing will be shown on 1/4th the width of the canvas visually (css).
+    // Because, we inserted 300 to the function, but the 300 is taken into as canvas pixels. Which is 1/4th of the canvas width visually.
+    // So, we want to scale the drawing coordinates (ie; CTX)  such that when i type 300, then it should draw at 600. ie; It should match the
+    // Canvas pixels.
+    // We had scaled the Canvas pixels and increased the Canvas pixel width and height to physical pixel amount by using Scaling factor 
+    // (devicePixelRatio).
+    // We can use the same scaling factor to increase the VISUAL PIXELS in the canvas to the same amount of CANVAS PIXELS. Using ctx.scale().
+    // So that when we draw, it's accurate visually wrt the coordinates i had given to draw.
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    console.log(canvas.height, canvas.width);
 
-    // When we draw anything in the context using the rect (css) pixels, it scales it realtime to match the no. of physical pixels. So increase
-    // clarity by making the DevicePixelRatio to 1:1. Higher ratio means more clarity
+
+    const ctx = canvas.getContext('2d');
+    // When we draw anything in the context using the css pixels, it scales it realtime to match the no. of canvas pixels. 
+    // But here, we can comment the next line out - and it doesn't make any effect because scale == 1. But it's good to include it
+    // if the code is in another laptop or screen
     ctx.scale(scale, scale);
 
 
@@ -552,33 +584,33 @@ export const Canvas = () => {
 
     // This is put here, becasue canvasRef won't get initiated before canvas element is rendered
     buttonCoordRef.current['x'] = {
-      x0: canvasRef.current.getBoundingClientRect().width - 30,
-      x1: canvasRef.current.getBoundingClientRect().width, y0: 0, y1: 30
+      x0: width - 30,
+      x1: width, y0: 0, y1: 30
     }
-    buttonCoordRef.current["redo"] = { x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 }
-    buttonCoordRef.current["undo"] = { x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 }
+    buttonCoordRef.current["redo"] = { x0: width - 62, x1: width - 32, y0: 0, y1: 30 }
+    buttonCoordRef.current["undo"] = { x0: width - 94, x1: width - 64, y0: 0, y1: 30 }
 
 
     // create and store buttons in an object datastructure
-    buttonsImgDataRef.current = buttonImagesCreator(buttonsRef.current, contextRef.current, rect);
+    buttonsImgDataRef.current = buttonImagesCreator(buttonsRef.current, contextRef.current, style);
     // create and store color palette imgs data in an object datastructure
     colorPaletteImgDataRef.current = colorPaletteImagesCreator(contextRef.current, colorsRef.current);
 
     // Buttons Render
-    buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
     /// drawPencil is active by default. So color the button bg
-    buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
+    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
 
     //Render the current drawing in the canvas
 
     const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
     if (undoRedoArrayPointer >= 0) {
-      drawUndoRedoArray("undo", contextRef.current, rect, clearCanvas, setDrawProps,
+      drawUndoRedoArray("undo", contextRef.current, style, clearCanvas, setDrawProps,
         { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
-      buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+      buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
       Object.keys(whichShapeSelectedRef.current).forEach((key) => {
         if (whichShapeSelectedRef.current[key]) {
-          buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
+          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
             colorsRef.current[0], key);
         }
       })
@@ -590,7 +622,8 @@ export const Canvas = () => {
   // Event listener attacher - after the useEffects above is run
   useEffect(() => {
 
-    const rect = canvasRef.current.getBoundingClientRect();
+    // const rect = canvasRef.current.getBoundingClientRect();
+    const style = getComputedStyle(canvasRef.current);
 
     // on mouseUpRef on any place on window or if the user leaves the browser, turn mouseUpRef = true
     function handleMouseUpOrLeaveWindow(e) {
@@ -678,10 +711,10 @@ export const Canvas = () => {
         //
         //
 
-        buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+        buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
         Object.keys(whichShapeSelectedRef.current).forEach((key) => {
           if (whichShapeSelectedRef.current[key]) {
-            buttonRender(contextRef.current, rect, buttonsImgDataRef.current, { select: true },
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true },
               colorPaletteImgDataRef.current, colorsRef.current[0], key);
           }
         })
@@ -701,7 +734,6 @@ export const Canvas = () => {
     }
   }, [])
 
-  console.log(window.localStorage.getItem("undoRedoArrayPointer"));
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
     onMouseLeave={handleMouseLeave} />

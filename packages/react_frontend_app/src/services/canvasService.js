@@ -1,6 +1,7 @@
 
 
-export const buttonImagesCreator = (buttons, ctx, rect) => {
+export const buttonImagesCreator = (buttons, ctx, style) => {
+  const width = parseFloat(style.width);
 
   const buttonsImgData = {};
   for (let button in buttons) {
@@ -133,82 +134,82 @@ export const buttonImagesCreator = (buttons, ctx, rect) => {
 
   function xImage({ bgcolor, iconcolor }) {
     ctx.fillStyle = bgcolor;
-    ctx.fillRect(rect.width - 30, 0, 30, 30);
+    ctx.fillRect(width - 30, 0, 30, 30);
     ctx.font = "20px Arial";
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = iconcolor;
-    ctx.fillText("x", rect.width - 15, 15);
+    ctx.fillText("x", width - 15, 15);
   }
   xImage({ bgcolor: "lightgrey", iconcolor: "black" })
-  buttonsImgData.x.normal = ctx.getImageData(rect.width - 30, 0, 30, 30);
+  buttonsImgData.x.normal = ctx.getImageData(width - 30, 0, 30, 30);
   xImage({ bgcolor: "lightgrey", iconcolor: "white" })
-  buttonsImgData.x.highlight = ctx.getImageData(rect.width - 30, 0, 30, 30);
+  buttonsImgData.x.highlight = ctx.getImageData(width - 30, 0, 30, 30);
   xImage({ bgcolor: "darkgrey", iconcolor: "black" })
-  buttonsImgData.x.select = ctx.getImageData(rect.width - 30, 0, 30, 30);
+  buttonsImgData.x.select = ctx.getImageData(width - 30, 0, 30, 30);
 
 
   function redoImage({ bgcolor, iconcolor, gapcolor }) {
     ctx.fillStyle = bgcolor;
-    ctx.fillRect(rect.width - 62, 0, 30, 30);
+    ctx.fillRect(width - 62, 0, 30, 30);
 
     /// fill the gap between buttonsImgData (just visual)
     ctx.fillStyle = gapcolor;
-    ctx.fillRect(rect.width - 32, 0, 2, 30);
+    ctx.fillRect(width - 32, 0, 2, 30);
     ///
     ctx.lineWidth = 1;
     ctx.strokeStyle = iconcolor;
     ctx.beginPath();
-    ctx.moveTo(rect.width - 37, 10);
-    ctx.lineTo(rect.width - 57, 10);
-    ctx.lineTo(rect.width - 57, 20);
-    ctx.lineTo(rect.width - 47, 20);
-    ctx.moveTo(rect.width - 37, 10);
-    ctx.lineTo(rect.width - 42, 5);
-    ctx.moveTo(rect.width - 37, 10);
-    ctx.lineTo(rect.width - 42, 15);
+    ctx.moveTo(width - 37, 10);
+    ctx.lineTo(width - 57, 10);
+    ctx.lineTo(width - 57, 20);
+    ctx.lineTo(width - 47, 20);
+    ctx.moveTo(width - 37, 10);
+    ctx.lineTo(width - 42, 5);
+    ctx.moveTo(width - 37, 10);
+    ctx.lineTo(width - 42, 15);
 
     ctx.stroke();
     ctx.beginPath();
   }
 
   redoImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
-  buttonsImgData.redo.normal = ctx.getImageData(rect.width - 62, 0, 32, 30);
+  buttonsImgData.redo.normal = ctx.getImageData(width - 62, 0, 32, 30);
   redoImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
-  buttonsImgData.redo.highlight = ctx.getImageData(rect.width - 62, 0, 32, 30);
+  buttonsImgData.redo.highlight = ctx.getImageData(width - 62, 0, 32, 30);
   redoImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
-  buttonsImgData.redo.select = ctx.getImageData(rect.width - 62, 0, 32, 30);
+  buttonsImgData.redo.select = ctx.getImageData(width - 62, 0, 32, 30);
 
   function undoImage({ bgcolor, iconcolor, gapcolor }) {
     ctx.fillStyle = bgcolor;
-    ctx.fillRect(rect.width - 94, 0, 30, 30);
+    ctx.fillRect(width - 94, 0, 30, 30);
 
     /// fill the gap between buttonsImgData (just visual)
     ctx.fillStyle = gapcolor;
-    ctx.fillRect(rect.width - 64, 0, 2, 30);
+    ctx.fillRect(width - 64, 0, 2, 30);
     ///
     ctx.lineWidth = 1;
     ctx.strokeStyle = iconcolor;
     ctx.beginPath();
-    ctx.moveTo(rect.width - 89, 10);
-    ctx.lineTo(rect.width - 69, 10);
-    ctx.lineTo(rect.width - 69, 20);
-    ctx.lineTo(rect.width - 79, 20);
-    ctx.moveTo(rect.width - 89, 10);
-    ctx.lineTo(rect.width - 84, 5);
-    ctx.moveTo(rect.width - 89, 10);
-    ctx.lineTo(rect.width - 84, 15);
+    ctx.moveTo(width - 89, 10);
+    ctx.lineTo(width - 69, 10);
+    ctx.lineTo(width - 69, 20);
+    ctx.lineTo(width - 79, 20);
+    ctx.moveTo(width - 89, 10);
+    ctx.lineTo(width - 84, 5);
+    ctx.moveTo(width - 89, 10);
+    ctx.lineTo(width - 84, 15);
 
     ctx.stroke();
     ctx.beginPath();
   }
 
   undoImage({ bgcolor: "lightgrey", iconcolor: "black", gapcolor: "white" })
-  buttonsImgData.undo.normal = ctx.getImageData(rect.width - 94, 0, 32, 30);
+  buttonsImgData.undo.normal = ctx.getImageData(width - 94, 0, 32, 30);
   undoImage({ bgcolor: "lightgrey", iconcolor: "white", gapcolor: "white" })
-  buttonsImgData.undo.highlight = ctx.getImageData(rect.width - 94, 0, 32, 30);
+  buttonsImgData.undo.highlight = ctx.getImageData(width - 94, 0, 32, 30);
   undoImage({ bgcolor: "darkgrey", iconcolor: "black", gapcolor: "white" })
-  buttonsImgData.undo.select = ctx.getImageData(rect.width - 94, 0, 32, 30);
+  buttonsImgData.undo.select = ctx.getImageData(width - 94, 0, 32, 30);
 
 
   return buttonsImgData;
@@ -274,9 +275,10 @@ export const colorPaletteRender = (ctx, colors, colorPaletteCoords, colorPalette
 }
 
 
-export const buttonRender = (ctx, rect, buttonsImgData, { normal = false, highlight = false, select = false },
+export const buttonRender = (ctx, style, buttonsImgData, { normal = false, highlight = false, select = false },
   colorPaletteImgData, color = null, shape = "all") => { // color = first element in the colors array (because the first element is always the selected one)
 
+  const width = parseFloat(style.width);
 
   if (shape === "rectangle" || shape === "all") {
     if (normal) {
@@ -330,31 +332,31 @@ export const buttonRender = (ctx, rect, buttonsImgData, { normal = false, highli
 
   if (shape === "x" || shape === "all") {
     if (normal) {
-      ctx.putImageData(buttonsImgData.x.normal, rect.width - 30, 0);
+      ctx.putImageData(buttonsImgData.x.normal, width - 30, 0);
     } else if (highlight) {
-      ctx.putImageData(buttonsImgData.x.highlight, rect.width - 30, 0);
+      ctx.putImageData(buttonsImgData.x.highlight, width - 30, 0);
     } else if (select) {
-      ctx.putImageData(buttonsImgData.x.select, rect.width - 30, 0);
+      ctx.putImageData(buttonsImgData.x.select, width - 30, 0);
     }
   }
 
   if (shape === "redo" || shape === "all") {
     if (normal) {
-      ctx.putImageData(buttonsImgData.redo.normal, rect.width - 62, 0);
+      ctx.putImageData(buttonsImgData.redo.normal, width - 62, 0);
     } else if (highlight) {
-      ctx.putImageData(buttonsImgData.redo.highlight, rect.width - 62, 0);
+      ctx.putImageData(buttonsImgData.redo.highlight, width - 62, 0);
     } else if (select) {
-      ctx.putImageData(buttonsImgData.redo.select, rect.width - 62, 0);
+      ctx.putImageData(buttonsImgData.redo.select, width - 62, 0);
     }
   }
 
   if (shape === "undo" || shape === "all") {
     if (normal) {
-      ctx.putImageData(buttonsImgData.undo.normal, rect.width - 94, 0);
+      ctx.putImageData(buttonsImgData.undo.normal, width - 94, 0);
     } else if (highlight) {
-      ctx.putImageData(buttonsImgData.undo.highlight, rect.width - 94, 0);
+      ctx.putImageData(buttonsImgData.undo.highlight, width - 94, 0);
     } else if (select) {
-      ctx.putImageData(buttonsImgData.undo.select, rect.width - 94, 0);
+      ctx.putImageData(buttonsImgData.undo.select, width - 94, 0);
     }
   }
 }
@@ -393,10 +395,11 @@ export const isOutsideColorButton = (colorIndex, mouseCoord, colorPaletteCoords,
   }, { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY })
 }
 
-export const buttonFinder = (mouseDownCoord, rect, isInsideButtonRegion) => {
+export const buttonFinder = (mouseDownCoord, style, isInsideButtonRegion) => {
+  const width = parseFloat(style.width);
 
   switch (true) {
-    case isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 },
+    case isInsideButtonRegion({ x0: width - 30, x1: width, y0: 0, y1: 30 },
       { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
       return "x";
 
@@ -420,11 +423,11 @@ export const buttonFinder = (mouseDownCoord, rect, isInsideButtonRegion) => {
       { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
       return "color";
 
-    case isInsideButtonRegion({ x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 },
+    case isInsideButtonRegion({ x0: width - 62, x1: width - 32, y0: 0, y1: 30 },
       { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
       return "redo";
 
-    case isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 },
+    case isInsideButtonRegion({ x0: width - 94, x1: width - 64, y0: 0, y1: 30 },
       { offsetX: mouseDownCoord.offsetX, offsetY: mouseDownCoord.offsetY }):
       return "undo";
 
@@ -435,10 +438,12 @@ export const buttonFinder = (mouseDownCoord, rect, isInsideButtonRegion) => {
 
 }
 
-export const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegion) => {
+export const isOutsideButton = (buttonName, mouseCoord, style, isInsideButtonRegion) => {
+  const width = parseFloat(style.width);
+
   switch (buttonName) {
     case "x":
-      return !isInsideButtonRegion({ x0: rect.width - 30, x1: rect.width, y0: 0, y1: 30 },
+      return !isInsideButtonRegion({ x0: width - 30, x1: width, y0: 0, y1: 30 },
         { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
 
     case "rectangle":
@@ -462,11 +467,11 @@ export const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegi
         { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
 
     case "redo":
-      return !isInsideButtonRegion({ x0: rect.width - 62, x1: rect.width - 32, y0: 0, y1: 30 },
+      return !isInsideButtonRegion({ x0: width - 62, x1: width - 32, y0: 0, y1: 30 },
         { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
 
     case "undo":
-      return !isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width - 64, y0: 0, y1: 30 },
+      return !isInsideButtonRegion({ x0: width - 94, x1: width - 64, y0: 0, y1: 30 },
         { offsetX: mouseCoord.offsetX, offsetY: mouseCoord.offsetY });
 
     default:
@@ -476,10 +481,12 @@ export const isOutsideButton = (buttonName, mouseCoord, rect, isInsideButtonRegi
 
 // CANVAS MANIPULATION SERVICES
 
-export const clearCanvas = (ctx, rect) => {
+export const clearCanvas = (ctx, style) => {
+  const width = parseFloat(style.width);
+  const height = parseFloat(style.height);
   //clearing only the drawable canvas
-  ctx.clearRect(158, 0, rect.width - 252, 30);
-  ctx.clearRect(0, 30, rect.width, rect.height - 30);
+  ctx.clearRect(158, 0, width - 252, 30);
+  ctx.clearRect(0, 30, width, height - 30);
 }
 
 export const setDrawProps = (ctx, { lineWidth = 1, color = "black", lineCap = "round", lineJoin = "round" }) => {
@@ -532,10 +539,12 @@ export const drawLine = (ctx, { clientX, clientY }, initCoord) => {
   ctx.stroke();
 }
 
-export const copyDrawableCanvas = (ctx, rect) => {
+export const copyDrawableCanvas = (ctx, style) => {
+  const width = parseFloat(style.width);
+  const height = parseFloat(style.height);
   const imgData = [];
-  imgData.push(ctx.getImageData(0, 30, rect.width, rect.height - 30));
-  imgData.push(ctx.getImageData(158, 0, rect.width - 252, 30));
+  imgData.push(ctx.getImageData(0, 30, width, height - 30));
+  imgData.push(ctx.getImageData(158, 0, width - 252, 30));
   return imgData;
 }
 
@@ -560,8 +569,9 @@ export const isEqualImgDatas = ({ imgData1, imgData2 }) => {
   return true;
 }
 
-export const drawUndoRedoArray = (undoOrRedo, ctx, rect, clearCanvas, setDrawProps,
+export const drawUndoRedoArray = (undoOrRedo, ctx, style, clearCanvas, setDrawProps,
   { drawRectangle, drawCircle, drawLine, drawPencil, drawDot }) => {
+
   ctx.save();
 
   const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
@@ -592,7 +602,7 @@ export const drawUndoRedoArray = (undoOrRedo, ctx, rect, clearCanvas, setDrawPro
       } else if (shapeObject.type === "pencilDot") {
         drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
       } else if (shapeObject.type === "x") {
-        clearCanvas(ctx, rect);
+        clearCanvas(ctx, style);
       }
     }
   } else if (undoOrRedo === "redo") {
@@ -613,7 +623,7 @@ export const drawUndoRedoArray = (undoOrRedo, ctx, rect, clearCanvas, setDrawPro
     } else if (shapeObject.type === "pencilDot") {
       drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
     } else if (shapeObject.type === "x") {
-      clearCanvas(ctx, rect);
+      clearCanvas(ctx, style);
     }
   }
 

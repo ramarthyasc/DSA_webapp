@@ -1,7 +1,8 @@
 canvas {
+  box-sizing: content-box;
   display: block;
-  border: 1px solid black;
+  border: 10px solid black;
   /* border-left: 10px solid black; */
-  width: 60%;
+  width: 600px;
   height: 891px;
 }
