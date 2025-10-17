@@ -1,7 +1,14 @@
+.signin-block {
+  display: flex;
+}
+
 .authorize {
-  padding-right: 20vw;
-  padding-top: 0.75vw;
-  padding-left: 1vw;
+  display: flex;
+  padding-right: 30px;
+  /* padding-top: 0.75vw; */
+  padding-left: 15px;
+  align-items: center;
+
 }
 
 
@@ -11,12 +18,14 @@
 
 
 ul.signin {
+  display: flex;
   list-style-type: none;
   position: relative;
   animation: signin 2s infinite;
   animation-timing-function: linear;
-  padding-top: 1.2vh;
+  /* padding-top: 1.2vh; */
   font-size: 1vw;
+  align-items: center;
 }
 
 

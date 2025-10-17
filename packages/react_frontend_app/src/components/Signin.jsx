@@ -16,11 +16,7 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
 
     let res;
     if (loginRes.ok) {
-      // As Signin render cannot be seen after signin, this function will be run only once per signin. So we can use local memory variable
-      // instead of using : setState, then giving a fake await to rerender the parent component and set the state, then giving that state to the fetch
-      // function.
       const { accessToken: jwt } = await loginRes.json();
-      //console.log(jwt);
 
       // Get request to Secure route using JWT
       res = await fetch("/draw-secure", {
@@ -77,11 +73,13 @@ function Signin({ setIsLoggedIn, setJsonWebToken, setUser }) {
 
   return (
     <>
-      <ul className='signin'>
-        <li>Sign in</li>
-      </ul>
-      <div className='authorize'>
-        <div id={navId}></div>
+      <div className='signin-block'>
+        <ul className='signin'>
+          <li>Sign in</li>
+        </ul>
+        <div className='authorize'>
+          <div id={navId}></div>
+        </div>
       </div>
     </>
   )

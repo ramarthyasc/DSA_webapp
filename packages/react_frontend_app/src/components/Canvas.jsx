@@ -170,7 +170,6 @@ export const Canvas = () => {
     if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
       isInsideButtonRegion({ x0: rect.width - 94, x1: rect.width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
       //if the cursor is inside any button area
-      console.log("hello");
       for (let button in buttonsRef.current) {
         if (isInsideButtonRegion({
           x0: buttonCoordRef.current[button].x0, x1: buttonCoordRef.current[button].x1,

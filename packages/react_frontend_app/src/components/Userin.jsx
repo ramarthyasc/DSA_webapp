@@ -45,14 +45,15 @@ async function signout({ setIsLoggedIn, setJsonWebToken, setUser, setError }) {
 
 function Userin({ setIsLoggedIn, setJsonWebToken, setUser, user }) {
   const setError = useContext(ErrorContext);
+  console.log(user);
 
   return (
 
     <>
       <ul className='user'>
-        <li className='name'>{user.name}</li>
         <li className='dropdown'>
-          <img src={user.picture} alt="pic" className='profile-pic' />
+          {/* profile pic is served this way from server as static file */}
+          <img src={'/proPic/' + user.picture} alt="pic" className='profile-pic' />
           <ul className='profile-menu'>
             <li onClick={() => { signout({ setIsLoggedIn, setJsonWebToken, setUser, setError }) }}>Signout</li>
           </ul>

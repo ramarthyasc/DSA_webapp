@@ -72,6 +72,7 @@ app.get('/home', jwtVerification, userHomeGet);
 app.get('/problemset', jwtVerification, userProblemsetGet);
 
 //DrawLogin App
+app.use('/proPic', express.static(path.join(__dirname, "./public/proPic/")));
 
 app.get('/algogame/:id', gameDetailGet);
 

@@ -1,8 +1,14 @@
-html,
-body {
+* {
+  /* outline: 1px solid red; */
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html,
+body {
   overflow-x: hidden;
+  background-color: #f9faf4;
 }
 
 
@@ -13,7 +19,6 @@ body {
   font-family: "Lacquer", system-ui;
   font-weight: 400;
   font-style: normal;
-  background-color: #f9faf4;
 
 }
 

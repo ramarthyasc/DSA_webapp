@@ -1,19 +1,20 @@
 ul.user {
   list-style-type: none;
   display: flex;
+  padding-right: 30px;
   /* padding-top: 1.2vh; */
-  font-size: 1vw;
-  padding-right: 20vw;
+  /* font-size: 1vw; */
+  /* padding-right: 50px; */
   align-items: center;
 }
 
-.user .name {
-  padding-right: 1vw;
-}
+/* .user .name { */
+/*   padding-right: 1vw; */
+/* } */
 
 .profile-pic {
-  width: 1.3vw;
-  height: 1.3vw;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   /* object-fit: cover; */
   position: relative;
@@ -30,13 +31,13 @@ ul.user {
 .dropdown:hover .profile-menu {
   list-style-type: none;
   display: flex;
-  flex-direction: column;
+  position: absolute;
+  /* flex-direction: column; */
   background: #fcbe6a;
   border-radius: 1vw;
-  padding: 0.25vw 0.5vw;
-  padding-left: 3vw;
-  position: absolute;
-  left: -0.5vw;
+  padding: 0.25vw 2vw 0.25vw 0.5vw;
+  /* padding-left: 3vw; */
+  left: -4vw;
   color: black;
   font-size: 0.8vw;
   cursor: pointer;
@@ -57,8 +58,8 @@ ul.user {
   }
 
   .profile-pic {
-    height: 5vw;
-    width: 5vw;
+    height: 30px;
+    width: 30px;
     margin-top: 0.8vw;
   }
 

@@ -3,7 +3,6 @@ import { useOutletContext } from 'react-router-dom';
 import { Canvas } from '../components/Canvas';
 import { Question } from '../components/Question';
 import '../styles/Drawboard.css';
-import { useRef } from 'react';
 
 function Drawboard() {
   const user = useOutletContext();
@@ -12,9 +11,6 @@ function Drawboard() {
 
   return (
     <>
-      <div >
-        <Link to='/'>Home</Link>
-      </div>
       <div className='space'>
         <Question />
         <Canvas />

@@ -8,6 +8,8 @@ const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 
 exports.googleJwtVerifyPost = async (req, res, next) => {
@@ -17,6 +19,7 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
   try {
     // userPayload is the jwt payload from Google authorization library : Check Google authorization for webapp -look at Credentials.
     userPayload = await verifyGoogleJWTService(client, token);
+
   } catch (err) {
     console.error(err);
     return res.sendStatus(400);
@@ -24,7 +27,7 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
 
   let userDetail;
   try {
-    userDetail = await verifyOrAddUserService(userPayload, searchUser, userAddReturn, updatePicture); //arguments give
+    userDetail = await verifyOrAddUserService(userPayload, searchUser, userAddReturn, updatePicture, fs, path); //arguments give
   } catch (err) {
     console.error(err);
     return res.sendStatus(500);
@@ -32,6 +35,7 @@ exports.googleJwtVerifyPost = async (req, res, next) => {
 
   //userdetail : userid, name, email, picture
   req.userDetail = userDetail;
+  console.log(userDetail);
   next();
 }
 
