@@ -6,13 +6,14 @@ import {
   pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray
 }
   from '../services/canvasService.js';
+import { forwardRef } from 'react';
 
 // NOTE : When you do 'X', and you have an 'X' already in the array behind the current 'X', then clear the previous 'X'
 // and elements before them
 // ie; There will be only one "X" in the array at a time.
 
-export const Canvas = () => {
-  const canvasRef = useRef();
+//forwardRef function returns a Component (which returns a jsx). Here, we used this bcs to transfer ref from the parent
+export const Canvas = forwardRef((props, canvasRef) => {
   const contextRef = useRef();
   //whichShapeSelectedRef helps isDrawingRef identify which shape to draw when i click and hold on the canvas
   /// by default, pencil is true
@@ -530,7 +531,7 @@ export const Canvas = () => {
 
     //  We don't want any mouseDowns outside the canvas to affect the undo array pushes -
     // when you do mouseUp in canvas just after mouseDown outside the canvas. So we set mouseDownCoords to (-1,-1) 
-    // when you leave canvas
+    // when you leave canvas. And we don't want dots to appear when i mouseDown outside the canvas and mouseUp inside the canvas
     mouseDownCoordRef.current = { offsetX: -1, offsetY: -1 };
   }
 
@@ -539,11 +540,14 @@ export const Canvas = () => {
     // Initialize the Canvas
     //
     const canvas = canvasRef.current;
-    //get the size of the canvas's content box only. Not including border or padding. --VERY IMPORTANT
+    //get the CSS pixels or CSS size of the canvas's content box only. Not including border or padding. --VERY IMPORTANT
     const style = getComputedStyle(canvas);
     const width = parseFloat(style.width);
     const height = parseFloat(style.height);
-    const scale = window.devicePixelRatio;
+    // putImageData doesn't care about scaling - and only draws exactly on Canvas pixels.(doesn't get scaled). So Buttons and Line/Rectangle/Circle
+    // rendering won't be done correctly when zoomed in the webapp and refreshed. So we only need Scale of 1 ie; DPR should be 1 even when i zoom
+    // the canvas in web. NOTE: DPR increase according to the zoom percentage of webapp. Eg; 150% zoom => 1.5 DPR
+    const scale = 1; //window.devicePixelRatio;
     // This makes the no. of canvas pixels [internal bitmap of canvas] 
     // in the width (canvas.width) and height (canvas.height) equal to the no. of physical pixels. Thus increasing clarity.
     //
@@ -566,8 +570,8 @@ export const Canvas = () => {
     // (devicePixelRatio).
     // We can use the same scaling factor to increase the VISUAL PIXELS in the canvas to the same amount of CANVAS PIXELS. Using ctx.scale().
     // So that when we draw, it's accurate visually wrt the coordinates i had given to draw.
-    canvas.width = width * scale;
-    canvas.height = height * scale;
+    canvas.width = width * scale; //canvas.width and canvas.height only include internal drawing buffer. ie; it doesn't include Border & Paddings
+    canvas.height = height * scale; // so we have to find an equivalent css pixel width (style.width) to scale it to get canvas.width or height
     console.log(canvas.height, canvas.width);
 
 
@@ -575,6 +579,9 @@ export const Canvas = () => {
     // When we draw anything in the context using the css pixels, it scales it realtime to match the no. of canvas pixels. 
     // But here, we can comment the next line out - and it doesn't make any effect because scale == 1. But it's good to include it
     // if the code is in another laptop or screen
+    //
+    // putImageData doesn't care about scaling - and only draws exactly on Canvas pixels.(doesn't get scaled). So Buttons and Line/Rectangle/Circle
+    // rendering won't be done correctly when zoomed in the webapp and refreshed.
     ctx.scale(scale, scale);
 
 
@@ -734,7 +741,8 @@ export const Canvas = () => {
     }
   }, [])
 
+
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
     onMouseLeave={handleMouseLeave} />
-}
+})

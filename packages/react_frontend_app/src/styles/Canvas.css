@@ -1,8 +1,11 @@
 canvas {
+  /* box-sizing content box done to not include border or paddding in style when i do : const style = getComputedStyle(canvas); in Canvas.jsx */
   box-sizing: content-box;
+
   display: block;
-  border: 10px solid black;
+  border: solid black;
+  border-width: 1px 10px 1px 1px;
   /* border-left: 10px solid black; */
-  width: 600px;
-  height: 891px;
+  width: 500px;
+  height: 907px;
 }
