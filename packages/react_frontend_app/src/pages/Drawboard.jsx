@@ -4,7 +4,7 @@ import { Canvas } from '../components/Canvas';
 import { Question } from '../components/Question';
 import Slider from '../components/Slider';
 import '../styles/Drawboard.css';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 
 function Drawboard() {
@@ -12,14 +12,17 @@ function Drawboard() {
 
 
   const canvasRef = useRef();
+  const [mouseDownSlider, setMouseDownSlider] = useState(false);
+  const [canvasEdgeMotionCoord, setCanvasEdgeMotionCoord] = useState(null);
 
 
   return (
     <>
       <div className='space'>
         <Question />
-        <Slider canvasRef={canvasRef} />
-        <Canvas ref={canvasRef} />
+        <Slider canvasRef={canvasRef} setMouseDownSlider={setMouseDownSlider} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
+        <Canvas ref={canvasRef} mouseDownSlider={mouseDownSlider} setMouseDownSlider={setMouseDownSlider}
+          canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
       </div>
     </>
 

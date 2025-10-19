@@ -536,6 +536,27 @@ export const Canvas = forwardRef((props, canvasRef) => {
   }
 
 
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const style = getComputedStyle(canvas);
+    const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
+    const scale = 1; //window.devicePixelRatio;
+
+    canvas.width = width * scale;
+    canvas.height = height * scale; // normally, not needed
+
+    const ctx = canvas.getContext('2d');
+    contextRef.current = ctx;
+    ctx.resetTransform();
+    ctx.scale(scale, scale);
+
+    //clear the whole canvas
+    contextRef.current.clearRect(0, 0, width, height);
+
+  }, [props.canvasEdgeMotionCoord])
+
   useEffect(() => {
     // Initialize the Canvas
     //
@@ -552,11 +573,12 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // in the width (canvas.width) and height (canvas.height) equal to the no. of physical pixels. Thus increasing clarity.
     //
     //
-    // CSS PIXEL = pixels that the whole webpage is made of
+    // CSS PIXEL = pixels that the whole webpage is made of (style.width, style.height)
     //
     // CANVAS PIXEL = (canvas.width, canvas.height) pixels that the canvas is made of -- NOTE: IMPPPPP PLAYER
     // PHYSICAL PIXEL = the pixels that the physical screen is made out of
-    // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas. ie; CSS/VISUAL PIXELS in the Canvas area. -- NOTE : IMPPPP PLAYER
+    // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas (Internal drawing space only. Doesn't include padding or borders).
+    // ie; CSS/VISUAL PIXELS in the Canvas area. -- NOTE : IMPPPP PLAYER
     // We can change how many CSS/visual pixels are there in the canvas area. Using ctx.
     // 
     // For example, the portion of the canvas can have width of 600 CSS pixels.
@@ -582,6 +604,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
     //
     // putImageData doesn't care about scaling - and only draws exactly on Canvas pixels.(doesn't get scaled). So Buttons and Line/Rectangle/Circle
     // rendering won't be done correctly when zoomed in the webapp and refreshed.
+    ctx.resetTransform();
     ctx.scale(scale, scale);
 
 
@@ -604,9 +627,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
     colorPaletteImgDataRef.current = colorPaletteImagesCreator(contextRef.current, colorsRef.current);
 
     // Buttons Render
-    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
-    /// drawPencil is active by default. So color the button bg
-    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
+    // buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+    // /// drawPencil is active by default. So color the button bg
+    // buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, "pencil");
 
     //Render the current drawing in the canvas
 
@@ -614,17 +637,34 @@ export const Canvas = forwardRef((props, canvasRef) => {
     if (undoRedoArrayPointer >= 0) {
       drawUndoRedoArray("undo", contextRef.current, style, clearCanvas, setDrawProps,
         { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
-      buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
-      Object.keys(whichShapeSelectedRef.current).forEach((key) => {
-        if (whichShapeSelectedRef.current[key]) {
-          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current,
-            colorsRef.current[0], key);
-        }
-      })
     }
 
 
   }, [])
+
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const style = getComputedStyle(canvas);
+
+
+    //paste the drawable canvas - putImageData pastes on the canvas pixels and It won't scale. Advantageous to us.ie; Drawings won't stretch
+    //when i resize the canvas using slider 
+    if (imgDataRef.current.length) {
+      pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+    }
+
+    // Buttons Render
+    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+    /// drawPencil is active by default. So color the button bg
+    Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+      if (whichShapeSelectedRef.current[key]) {
+        buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, key);
+      }
+    })
+
+  }, [props.canvasEdgeMotionCoord])
+
 
   // Event listener attacher - after the useEffects above is run
   useEffect(() => {
@@ -741,6 +781,21 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
   }, [])
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const style = getComputedStyle(canvas);
+
+    if (props.mouseDownSlider) {
+      // we want the image of canvas before colorPalette is turned on. PutImage will not be scaled - it will be directly printed on canvas pixels
+      // It's an advantage for us
+      if (!colorPaletteIsOnRef.current) {
+        imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
+      } // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+      props.setMouseDownSlider(false);
+    }
+    // WE will use this imgDataRef to 
+
+  }, [props.mouseDownSlider])
 
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
