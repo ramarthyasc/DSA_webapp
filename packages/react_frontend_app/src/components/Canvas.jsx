@@ -575,10 +575,12 @@ export const Canvas = forwardRef((props, canvasRef) => {
     //
     // CSS PIXEL = pixels that the whole webpage is made of (style.width, style.height)
     //
-    // CANVAS PIXEL = (canvas.width, canvas.height) pixels that the canvas is made of -- NOTE: IMPPPPP PLAYER
+    // CANVAS PIXEL = (canvas.width, canvas.height) pixels that the canvas is made of -- on which you draw NOTE: IMPPPPP PLAYER
     // PHYSICAL PIXEL = the pixels that the physical screen is made out of
-    // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas (Internal drawing space only. Doesn't include padding or borders).
-    // ie; CSS/VISUAL PIXELS in the Canvas area. -- NOTE : IMPPPP PLAYER
+    // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas (Internal drawing space only. Doesn't include padding or borders). This
+    // is the same as Canvas pixels. The Coordinates of Canvas pixels is Context/ CTX.  NOTE : IMPPPP PLAYER
+    // When we give values of Coordinates, as a human, we give what we visually see- Which is - the no. of pixels of css is given to the ctx as coordinates.
+    // So we need to scale it so that the machine could understand where to draw. CSS/VISUAL/STYLE PIXELS in the Canvas area. --
     // We can change how many CSS/visual pixels are there in the canvas area. Using ctx.
     // 
     // For example, the portion of the canvas can have width of 600 CSS pixels.
@@ -612,13 +614,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     contextRef.current = ctx;
 
 
-    // This is put here, becasue canvasRef won't get initiated before canvas element is rendered
-    buttonCoordRef.current['x'] = {
-      x0: width - 30,
-      x1: width, y0: 0, y1: 30
-    }
-    buttonCoordRef.current["redo"] = { x0: width - 62, x1: width - 32, y0: 0, y1: 30 }
-    buttonCoordRef.current["undo"] = { x0: width - 94, x1: width - 64, y0: 0, y1: 30 }
 
 
     // create and store buttons in an object datastructure
@@ -646,6 +641,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const style = getComputedStyle(canvas);
+    const width = parseFloat(style.width);
 
 
     //paste the drawable canvas - putImageData pastes on the canvas pixels and It won't scale. Advantageous to us.ie; Drawings won't stretch
@@ -656,6 +652,15 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
     // Buttons Render
     buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
+    // This is put here, becasue canvasRef won't get initiated before canvas element is rendered
+    buttonCoordRef.current['x'] = {
+      x0: width - 30,
+      x1: width, y0: 0, y1: 30
+    }
+    buttonCoordRef.current["redo"] = { x0: width - 62, x1: width - 32, y0: 0, y1: 30 }
+    buttonCoordRef.current["undo"] = { x0: width - 94, x1: width - 64, y0: 0, y1: 30 }
+
     /// drawPencil is active by default. So color the button bg
     Object.keys(whichShapeSelectedRef.current).forEach((key) => {
       if (whichShapeSelectedRef.current[key]) {
@@ -790,7 +795,10 @@ export const Canvas = forwardRef((props, canvasRef) => {
       // It's an advantage for us
       if (!colorPaletteIsOnRef.current) {
         imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
-      } // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+      } else {
+        // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+        colorPaletteIsOnRef.current = false;
+      }
       props.setMouseDownSlider(false);
     }
     // WE will use this imgDataRef to 
