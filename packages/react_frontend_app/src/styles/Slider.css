@@ -3,3 +3,8 @@
   border: 1px solid black;
   width: 10px;
 }
+
+.handler:hover {
+  background-color: darkorange;
+  cursor: ew-resize;
+}

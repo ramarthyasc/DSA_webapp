@@ -115,6 +115,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
   const handleMouseMove = ({ nativeEvent }) => {
     // const rect = canvasRef.current.getBoundingClientRect();
     const style = getComputedStyle(canvasRef.current);
+    const width = parseFloat(style.width);
     const { offsetX, offsetY } = nativeEvent;
 
     if (buttonIsWhiteRef.current) {
@@ -148,6 +149,19 @@ export const Canvas = forwardRef((props, canvasRef) => {
       }
     }
 
+    //styles : 
+    if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
+      isInsideButtonRegion({ x0: width - 94, x1: width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
+      console.log("helo")
+      canvasRef.current.style.cursor = "pointer";
+    } else if (colorPaletteIsOnRef.current && isInsideButtonRegion({
+      x0: colorPaletteCoords[0][0], x1: colorPaletteCoords.at(-1)[0] + 30, y0: 0, y1: 30
+    }, { offsetX, offsetY })) {
+      console.log('yey')
+      canvasRef.current.style.cursor = "pointer";
+    } else {
+      canvasRef.current.style.cursor = "crosshair";
+    }
 
     // ENTRY POINT OF DRAWING ON CANVAS :
 
