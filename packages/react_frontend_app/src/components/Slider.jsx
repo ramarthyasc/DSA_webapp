@@ -11,8 +11,6 @@ function Slider(props) {
     const { clientX, clientY } = nativeEvent;
     onSliderRef.current = true;
     mouseDownCoordSliderRef.current = [clientX, clientY];
-    props.setMouseDownSlider(true);
-
   }
 
   useEffect(() => {

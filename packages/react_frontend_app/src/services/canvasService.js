@@ -481,12 +481,19 @@ export const isOutsideButton = (buttonName, mouseCoord, style, isInsideButtonReg
 
 // CANVAS MANIPULATION SERVICES
 
-export const clearCanvas = (ctx, style) => {
-  const width = parseFloat(style.width);
-  const height = parseFloat(style.height);
-  //clearing only the drawable canvas
-  ctx.clearRect(158, 0, width - 252, 30);
-  ctx.clearRect(0, 30, width, height - 30);
+// export const clearCanvas = (ctx, style) => {
+//   const width = parseFloat(style.width);
+//   const height = parseFloat(style.height);
+//   //clearing only the drawable canvas
+//   ctx.clearRect(158, 0, width - 252, 30);
+//   ctx.clearRect(0, 30, width, height - 30);
+// }
+export const clearCanvas = (offCtx, offCanvas) => {
+  //Clear the offscreen canvas
+  offCtx.save();
+  offCtx.fillStyle = "#f9faf4";
+  offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+  offCtx.restore();
 }
 
 export const setDrawProps = (ctx, { lineWidth = 1, color = "black", lineCap = "round", lineJoin = "round" }) => {
@@ -499,44 +506,46 @@ export const setDrawProps = (ctx, { lineWidth = 1, color = "black", lineCap = "r
   // etc.. properties
 }
 
-export const startPencilDraw = (ctx, { offsetX, offsetY }) => {
+export const startPencilDraw = (offCtx, { offsetX, offsetY }) => {
   //native event is the event of DOM
-  ctx.beginPath();
-  ctx.moveTo(offsetX, offsetY)
+  offCtx.beginPath();
+  offCtx.moveTo(offsetX, offsetY)
 }
 
-export const drawPencil = (ctx, { clientX, clientY }, initCoord) => {
+export const drawPencil = (offCtx, { clientX, clientY }, initCoord) => {
 
-  //  clientX(drawing's) - (clientX(moveTo's) - initialMoveToX(ctx)) , clientY(drawing's) - (clientY(moveTo's) - initialMoveToY(ctx)) -> substitute below
-  ctx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
-  ctx.stroke();
+  //  clientX(drawing's) - (clientX(moveTo's) - initialMoveToX(offCtx)) , clientY(drawing's) - (clientY(moveTo's) - initialMoveToY(offCtx)) -> substitute below
+  offCtx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
+  offCtx.stroke();
 }
 
-export const drawDot = (ctx, { offsetX, offsetY }) => {
+export const drawDot = (offCtx, { offsetX, offsetY }) => {
   // offsetX is reduced by width of line to position the dot with the continuing line correctly.
-  ctx.fillRect(offsetX - ctx.lineWidth / 2, offsetY - ctx.lineWidth / 2, 4, 4);
+
+  // offCtx.fillRect(offsetX - offCtx.lineWidth / 2, offsetY - offCtx.lineWidth / 2, 4, 4);
+  offCtx.fillRect(offsetX - offCtx.lineWidth / 2, offsetY - offCtx.lineWidth / 2, 4, 4);
 }
 
-export const drawRectangle = (ctx, { clientX, clientY }, initCoord) => {
-  ctx.strokeRect(initCoord.xOffset, initCoord.yOffset, clientX - initCoord.xClient, clientY - initCoord.yClient);
+export const drawRectangle = (offCtx, { clientX, clientY }, initCoord) => {
+  offCtx.strokeRect(initCoord.xOffset, initCoord.yOffset, clientX - initCoord.xClient, clientY - initCoord.yClient);
 }
 
 
-export const drawCircle = (ctx, { clientX, clientY }, initCoord) => {
+export const drawCircle = (offCtx, { clientX, clientY }, initCoord) => {
   // clientX, clientY is your Mousecoordinates while drawing -from the top left corner of Windows as (0,0)
-  ctx.beginPath();
+  offCtx.beginPath();
   // dynamic center - having your circumference starting from the initialCoord. If you want static center, then only give xOffset and yOffset
-  ctx.arc(initCoord.xOffset + (clientX - initCoord.xClient) / 2, initCoord.yOffset + (clientY - initCoord.yClient) / 2,
+  offCtx.arc(initCoord.xOffset + (clientX - initCoord.xClient) / 2, initCoord.yOffset + (clientY - initCoord.yClient) / 2,
     Math.sqrt((clientX - initCoord.xClient) ** 2 + (clientY - initCoord.yClient) ** 2) / 2, 0, 2 * Math.PI);
-  ctx.stroke();
+  offCtx.stroke();
 
 }
 
-export const drawLine = (ctx, { clientX, clientY }, initCoord) => {
-  ctx.beginPath();
-  ctx.moveTo(initCoord.xOffset, initCoord.yOffset);
-  ctx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
-  ctx.stroke();
+export const drawLine = (offCtx, { clientX, clientY }, initCoord) => {
+  offCtx.beginPath();
+  offCtx.moveTo(initCoord.xOffset, initCoord.yOffset);
+  offCtx.lineTo(clientX - (initCoord.xClient - initCoord.xOffset), clientY - (initCoord.yClient - initCoord.yOffset));
+  offCtx.stroke();
 }
 
 export const copyDrawableCanvas = (ctx, style) => {
@@ -553,26 +562,30 @@ export const pasteDrawableCanvas = (ctx, drawableCanvasImgDataArray) => {
   ctx.putImageData(drawableCanvasImgDataArray[1], 158, 0);
 }
 
-export const isEqualImgDatas = ({ imgData1, imgData2 }) => {
-  for (let i = 0; i < imgData1[0].data.length; i++) {
-    if (imgData1[0].data[i] !== imgData2[0].data[i]) {
-      return false;
-    }
-  }
-
-  for (let i = 0; i < imgData1[1].data.length; i++) {
-    if (imgData1[1].data[i] !== imgData2[1].data[i]) {
-      return false;
-    }
-  }
-
-  return true;
+export const pasteOffscreenCanvas = (ctx, offCanvas) => {
+  console.log(offCanvas)
+  ctx.drawImage(offCanvas, 0, 0);
 }
+// export const isEqualImgDatas = ({ imgData1, imgData2 }) => {
+//   for (let i = 0; i < imgData1[0].data.length; i++) {
+//     if (imgData1[0].data[i] !== imgData2[0].data[i]) {
+//       return false;
+//     }
+//   }
+//
+//   for (let i = 0; i < imgData1[1].data.length; i++) {
+//     if (imgData1[1].data[i] !== imgData2[1].data[i]) {
+//       return false;
+//     }
+//   }
+//
+//   return true;
+// }
 
-export const drawUndoRedoArray = (undoOrRedo, ctx, style, clearCanvas, setDrawProps,
+export const drawUndoRedoArray = (undoOrRedo, offCtx, offCanvas, clearCanvas, setDrawProps,
   { drawRectangle, drawCircle, drawLine, drawPencil, drawDot }) => {
 
-  ctx.save();
+  offCtx.save();
 
   const undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
   const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
@@ -585,48 +598,48 @@ export const drawUndoRedoArray = (undoOrRedo, ctx, style, clearCanvas, setDrawPr
     for (i; i <= undoRedoArrayPointer; i++) {
       const shapeObject = undoRedoArray[i];
       // you can give lineWidth to shapePrototypes and then give shapeObject.lineWidth here - if needed. Until then. It's hardcoded
-      setDrawProps(ctx, { lineWidth: 4, color: shapeObject.color });
+      setDrawProps(offCtx, { lineWidth: 4, color: shapeObject.color });
 
       if (shapeObject.type === "rectangle") {
-        drawRectangle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+        drawRectangle(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
       } else if (shapeObject.type === "circle") {
-        drawCircle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+        drawCircle(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
       } else if (shapeObject.type === "line") {
-        drawLine(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+        drawLine(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
       } else if (shapeObject.type === "pencilDraw") {
-        startPencilDraw(ctx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
+        startPencilDraw(offCtx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
         for (let [clientX, clientY, initCoord] of shapeObject.props) {
-          drawPencil(ctx, { clientX: clientX, clientY: clientY }, initCoord);
+          drawPencil(offCtx, { clientX: clientX, clientY: clientY }, initCoord);
         }
-        ctx.beginPath();
+        offCtx.beginPath();
       } else if (shapeObject.type === "pencilDot") {
-        drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
+        drawDot(offCtx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
       } else if (shapeObject.type === "x") {
-        clearCanvas(ctx, style);
+        clearCanvas(offCtx, offCanvas);
       }
     }
   } else if (undoOrRedo === "redo") {
     const shapeObject = undoRedoArray[undoRedoArrayPointer];
-    setDrawProps(ctx, { lineWidth: 4, color: shapeObject.color });
+    setDrawProps(offCtx, { lineWidth: 4, color: shapeObject.color });
     if (shapeObject.type === "rectangle") {
-      drawRectangle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      drawRectangle(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
     } else if (shapeObject.type === "circle") {
-      drawCircle(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      drawCircle(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
     } else if (shapeObject.type === "line") {
-      drawLine(ctx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
+      drawLine(offCtx, { clientX: shapeObject.props[0], clientY: shapeObject.props[1] }, shapeObject.props[2]);
     } else if (shapeObject.type === "pencilDraw") {
-      startPencilDraw(ctx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
+      startPencilDraw(offCtx, { offsetX: shapeObject.start[0], offsetY: shapeObject.start[1] });
       for (let [clientX, clientY, initCoord] of shapeObject.props) {
-        drawPencil(ctx, { clientX: clientX, clientY: clientY }, initCoord);
+        drawPencil(offCtx, { clientX: clientX, clientY: clientY }, initCoord);
       }
-      ctx.beginPath();
+      offCtx.beginPath();
     } else if (shapeObject.type === "pencilDot") {
-      drawDot(ctx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
+      drawDot(offCtx, { offsetX: shapeObject.props[0], offsetY: shapeObject.props[1] });
     } else if (shapeObject.type === "x") {
-      clearCanvas(ctx, style);
+      clearCanvas(offCtx, offCanvas);
     }
   }
 
-  ctx.restore();
+  offCtx.restore();
 
 }

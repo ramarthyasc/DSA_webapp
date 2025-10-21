@@ -12,7 +12,6 @@ function Drawboard() {
 
 
   const canvasRef = useRef();
-  const [mouseDownSlider, setMouseDownSlider] = useState(false);
   const [canvasEdgeMotionCoord, setCanvasEdgeMotionCoord] = useState(null);
 
 
@@ -20,9 +19,8 @@ function Drawboard() {
     <>
       <div className='space'>
         <Question />
-        <Slider canvasRef={canvasRef} setMouseDownSlider={setMouseDownSlider} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
-        <Canvas ref={canvasRef} mouseDownSlider={mouseDownSlider} setMouseDownSlider={setMouseDownSlider}
-          canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
+        <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
+        <Canvas ref={canvasRef} canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
       </div>
     </>
 

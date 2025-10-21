@@ -3,7 +3,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
   clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
-  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray
+  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray, pasteOffscreenCanvas
 }
   from '../services/canvasService.js';
 import { forwardRef } from 'react';
@@ -88,7 +88,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
     x: {
       type: "x"
     },
-  })
+  });
+  const offContextRef = useRef();
+  const offCanvasRef = useRef();
 
   //only if I hadn't set undoRedoArray in local storage, then only implement the below.
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
@@ -230,6 +232,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
     /// Set properties before drawing
     setDrawProps(contextRef.current, { lineWidth: 4, color: colorsRef.current[0] });
+    setDrawProps(offContextRef.current, { lineWidth: 4, color: colorsRef.current[0] });
     ///
 
     if (whichShapeSelectedRef.current.pencil) {
@@ -304,6 +307,8 @@ export const Canvas = forwardRef((props, canvasRef) => {
         }
 
 
+        //draw in both canvases
+        drawDot(offContextRef.current, { offsetX, offsetY });
         drawDot(contextRef.current, { offsetX, offsetY });
 
         //
@@ -326,7 +331,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
         }, { offsetX, offsetY })) {
 
           if (button === "x") {
-            clearCanvas(contextRef.current, style);
+            clearCanvas(offContextRef.current, offCanvasRef.current);
+            pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             let undoRedoArray = JSON.parse(window.localStorage.getItem("undoRedoArray"));
             let undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
@@ -374,11 +381,13 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
           //
           // Rerender the buttons which are unselected to normal mode. ie; Render all buttons in normal mode
-          buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+          // buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
           // Setting state on what is to be drawn
 
           if (button === "rectangle" || button === "pencil" || button === "circle" || button === "line") {
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
             Object.keys(whichShapeSelectedRef.current).forEach((key) => {
               whichShapeSelectedRef.current[key] = (key === button); // turning all others false and turning on the active button
             })
@@ -387,6 +396,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
               colorPaletteIsOnRef.current = false;
             }
           } else if (button === "color") {
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
             // don't lightgrey the selected whichShapeSelectedRef buttons. let it be there.
 
             if (colorPaletteIsOnRef.current) {
@@ -413,7 +423,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
           //3) Initially, When there is nothing in the undoRef stack. ie; You didn't draw anything on canvas initially
           if (button === "undo") {
 
-            clearCanvas(contextRef.current, style);
+            clearCanvas(offContextRef.current, offCanvasRef.current);
+            pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
             // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed
             colorPaletteIsOnRef.current = false;
 
@@ -425,8 +437,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
             if (undoRedoArrayPointer >= 0) {
 
-              drawUndoRedoArray("undo", contextRef.current, style, clearCanvas, setDrawProps,
+              drawUndoRedoArray("undo", offContextRef.current, offCanvasRef.current, clearCanvas, setDrawProps,
                 { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+              pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
               buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             }
@@ -437,6 +450,8 @@ export const Canvas = forwardRef((props, canvasRef) => {
           // The System of Undo - Redo works perfectly right now.
           // ie; There will be only one "X" in the array at a time.
           if (button === "redo") {
+            // make the highlighted button to normal
+            buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             // if color Palette was on, then revert the drawable canvas back to the state before the palette was displayed
             if (colorPaletteIsOnRef.current) {
@@ -453,8 +468,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
             // if the pointer didn't cross the last element of array
             if (undoRedoArrayPointer < undoRedoArray.length) {
-              drawUndoRedoArray("redo", contextRef.current, style, clearCanvas, setDrawProps,
+              drawUndoRedoArray("redo", offContextRef.current, offCanvasRef.current, clearCanvas, setDrawProps,
                 { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+              pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
               buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
             } else {
@@ -537,25 +553,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
 
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const style = getComputedStyle(canvas);
-    const width = parseFloat(style.width);
-    const height = parseFloat(style.height);
-    const scale = 1; //window.devicePixelRatio;
-
-    canvas.width = width * scale;
-    canvas.height = height * scale; // normally, not needed
-
-    const ctx = canvas.getContext('2d');
-    contextRef.current = ctx;
-    ctx.resetTransform();
-    ctx.scale(scale, scale);
-
-    //clear the whole canvas
-    contextRef.current.clearRect(0, 0, width, height);
-
-  }, [props.canvasEdgeMotionCoord])
 
   useEffect(() => {
     // Initialize the Canvas
@@ -613,7 +610,12 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // setting the context to ContextRef
     contextRef.current = ctx;
 
+    //create an inmemory Canvas - which acts like the permanent store of all drawings -and where we do undo-redos. So we don't have to repaint the 
+    //original visual canvas everytime we draw something.
+    offCanvasRef.current = new OffscreenCanvas(window.innerWidth * scale, canvas.height);
+    const offctx = offCanvasRef.current.getContext("2d");
 
+    offContextRef.current = offctx;
 
 
     // create and store buttons in an object datastructure
@@ -630,8 +632,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
     const undoRedoArrayPointer = Number(window.localStorage.getItem("undoRedoArrayPointer"));
     if (undoRedoArrayPointer >= 0) {
-      drawUndoRedoArray("undo", contextRef.current, style, clearCanvas, setDrawProps,
+      drawUndoRedoArray("undo", offContextRef.current, offCanvasRef.current, clearCanvas, setDrawProps,
         { drawRectangle, drawCircle, drawLine, drawPencil, drawDot });
+      pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
     }
 
 
@@ -642,13 +645,22 @@ export const Canvas = forwardRef((props, canvasRef) => {
     const canvas = canvasRef.current;
     const style = getComputedStyle(canvas);
     const width = parseFloat(style.width);
+    const scale = 1; //window.devicePixelRatio;
+    //SETTING CANVAS.WIDTH or HEIGHT CLEARS ALL THE CANVAS PIXELS TO TRANSPARENT PIXELS (0,0,0,0) - same as doing clearRect on full viewable canvas 
+    // Resets : 
+    // - All pixels
+    // - All context states (lineWidth, fillStyle, strokeStyle, etc..)
+    // - Resets transformation matrix - same as calling ctx.resetTransform()
+    canvas.width = width * scale;
 
+    contextRef.current = canvas.getContext('2d');
+    contextRef.current.scale(scale, scale);
 
     //paste the drawable canvas - putImageData pastes on the canvas pixels and It won't scale. Advantageous to us.ie; Drawings won't stretch
     //when i resize the canvas using slider 
-    if (imgDataRef.current.length) {
-      pasteDrawableCanvas(contextRef.current, imgDataRef.current);
-    }
+
+    pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
+    if (colorPaletteIsOnRef.current) { colorPaletteIsOnRef.current = false };
 
     // Buttons Render
     buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
@@ -681,7 +693,10 @@ export const Canvas = forwardRef((props, canvasRef) => {
     function handleMouseUpOrLeaveWindow(e) {
 
       // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
-      if (whichShapeSelectedRef.current.pencil) { contextRef.current.beginPath(); }
+      if (whichShapeSelectedRef.current.pencil) {
+        contextRef.current.beginPath();
+        offContextRef.current.beginPath();
+      }
       //
 
       if (isDrawingRef.current) {// works only for 1 mouse up outside the canvas
@@ -708,6 +723,15 @@ export const Canvas = forwardRef((props, canvasRef) => {
           shapePrototypesRef.current[whichShapeSelected].props = [e.clientX, e.clientY, shapeInitialCoordRef.current];
           shapePrototypesRef.current[whichShapeSelected].color = colorsRef.current[0];
           undoRedoArrayPusher(shapePrototypesRef.current, whichShapeSelected);
+
+          // insert the drawings into Offscreen canvas too
+          if (whichShapeSelectedRef.current.rectangle) {
+            drawRectangle(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+          } else if (whichShapeSelectedRef.current.circle) {
+            drawCircle(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+          } else if (whichShapeSelectedRef.current.line) {
+            drawLine(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+          }
 
         } else if (whichShapeSelectedRef.current.pencil) {
 
@@ -736,7 +760,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
         if (whichShapeSelectedRef.current.pencil) { /// by default, pencil is true
           /// for pencil === true
+          //Draw on both canvas pixels
           drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+          drawPencil(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
           shapePrototypesRef.current.pencilDraw.props.push([e.clientX, e.clientY, shapeInitialCoordRef.current]);
         }
 
@@ -786,24 +812,24 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
   }, [])
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const style = getComputedStyle(canvas);
-
-    if (props.mouseDownSlider) {
-      // we want the image of canvas before colorPalette is turned on. PutImage will not be scaled - it will be directly printed on canvas pixels
-      // It's an advantage for us
-      if (!colorPaletteIsOnRef.current) {
-        imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
-      } else {
-        // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
-        colorPaletteIsOnRef.current = false;
-      }
-      props.setMouseDownSlider(false);
-    }
-    // WE will use this imgDataRef to 
-
-  }, [props.mouseDownSlider])
+  // useEffect(() => {
+  //   const canvas = canvasRef.current;
+  //   const style = getComputedStyle(canvas);
+  //
+  //   if (props.mouseDownSlider) {
+  //     // we want the image of canvas before colorPalette is turned on. PutImage will not be scaled - it will be directly printed on canvas pixels
+  //     // It's an advantage for us
+  //     if (!colorPaletteIsOnRef.current) {
+  //       imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
+  //     } else {
+  //       // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+  //       colorPaletteIsOnRef.current = false;
+  //     }
+  //     props.setMouseDownSlider(false);
+  //   }
+  //   // WE will use this imgDataRef to 
+  //
+  // }, [props.mouseDownSlider])
 
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}
