@@ -14,15 +14,17 @@ function Drawboard() {
   const canvasRef = useRef();
   const [mouseDownSlider, setMouseDownSlider] = useState(false);
   const [canvasEdgeMotionCoord, setCanvasEdgeMotionCoord] = useState(null);
+  const slidingDirectionRef = useRef(0);
 
 
   return (
     <>
       <div className='space'>
         <Question />
-        <Slider canvasRef={canvasRef} setMouseDownSlider={setMouseDownSlider} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
+        <Slider canvasRef={canvasRef} setMouseDownSlider={setMouseDownSlider} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord}
+          slidingDirectionRef={slidingDirectionRef} />
         <Canvas ref={canvasRef} mouseDownSlider={mouseDownSlider} setMouseDownSlider={setMouseDownSlider}
-          canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
+          canvasEdgeMotionCoord={canvasEdgeMotionCoord} slidingDirectionRef={slidingDirectionRef} />
       </div>
     </>
 

@@ -630,3 +630,26 @@ export const drawUndoRedoArray = (undoOrRedo, ctx, style, clearCanvas, setDrawPr
   ctx.restore();
 
 }
+
+
+export const mergeImageDatas = (smallImgData, bigImgData) => {
+  const height0 = smallImgData[0].height;
+
+  for (let y = 0; y < height0; y++) {
+    const bigOffset = y * bigImgData[0].width * 4;
+    const smallOffset = y * smallImgData[0].width * 4;
+
+    bigImgData[0].data.set(smallImgData[0].data.slice(smallOffset, smallOffset + smallImgData[0].width * 4), bigOffset);
+  }
+
+  const height1 = smallImgData[1].height;
+
+  for (let y = 0; y < height1; y++) {
+    const bigOffset = y * bigImgData[1].width * 4;
+    const smallOffset = y * smallImgData[1].width * 4;
+
+    bigImgData[1].data.set(smallImgData[1].data.slice(smallOffset, smallOffset + smallImgData[1].width * 4), bigOffset);
+  }
+
+  return bigImgData;
+}

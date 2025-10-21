@@ -3,7 +3,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
   clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
-  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray
+  pasteDrawableCanvas, colorPaletteIndexFinder, isOutsideColorButton, drawUndoRedoArray, mergeImageDatas
 }
   from '../services/canvasService.js';
 import { forwardRef } from 'react';
@@ -89,6 +89,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
       type: "x"
     },
   })
+  const resizerImgDataRef = useRef([]);
 
   //only if I hadn't set undoRedoArray in local storage, then only implement the below.
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
@@ -646,8 +647,8 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
     //paste the drawable canvas - putImageData pastes on the canvas pixels and It won't scale. Advantageous to us.ie; Drawings won't stretch
     //when i resize the canvas using slider 
-    if (imgDataRef.current.length) {
-      pasteDrawableCanvas(contextRef.current, imgDataRef.current);
+    if (resizerImgDataRef.current.length) {
+      pasteDrawableCanvas(contextRef.current, resizerImgDataRef.current);
     }
 
     // Buttons Render
@@ -794,14 +795,28 @@ export const Canvas = forwardRef((props, canvasRef) => {
       // we want the image of canvas before colorPalette is turned on. PutImage will not be scaled - it will be directly printed on canvas pixels
       // It's an advantage for us
       if (!colorPaletteIsOnRef.current) {
-        imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
+        // if canvas.width is lower than before, then merge the previous resizerImgDataRef.current with the current - a Union replacement
+        if (props.slidingDirectionRef.current < 0) {
+          const imgData = copyDrawableCanvas(contextRef.current, style);
+          //union the previous big Canvas img data with the current small one
+          resizerImgDataRef.current = mergeImageDatas(imgData, resizerImgDataRef.current);
+        } else {
+          resizerImgDataRef.current = copyDrawableCanvas(contextRef.current, style);
+        }
       } else {
-        // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+        // if colorPalette is on, then, resizerImgDataRef.current will be already filled with Imagedata of drawable canvas without palette
+
+        if (props.slidingDirectionRef.current < 0) {
+          //union the previous big Canvas img data with the current small one
+          resizerImgDataRef.current = mergeImageDatas(imgDataRef.current, resizerImgDataRef.current);
+        } else {
+          resizerImgDataRef.current = copyDrawableCanvas(contextRef.current, style);
+        }
+
         colorPaletteIsOnRef.current = false;
       }
       props.setMouseDownSlider(false);
     }
-    // WE will use this imgDataRef to 
 
   }, [props.mouseDownSlider])
 
