@@ -375,7 +375,6 @@ export const isInsideButtonRegion = ({ x0, x1, y0, y1 }, { offsetX, offsetY }) =
 export const colorPaletteIndexFinder = (mouseDownCoord, colorPaletteCoords, isInsideButtonRegion) => {
 
   for (let i = 0; i < colorPaletteCoords.length; i++) {
-    // console.log("heloo")
     if (isInsideButtonRegion({
       x0: colorPaletteCoords[i][0], x1: colorPaletteCoords[i][0] + 30,
       y0: colorPaletteCoords[i][1], y1: colorPaletteCoords[i][1] + 30
@@ -563,7 +562,6 @@ export const pasteDrawableCanvas = (ctx, drawableCanvasImgDataArray) => {
 }
 
 export const pasteOffscreenCanvas = (ctx, offCanvas) => {
-  console.log(offCanvas)
   ctx.drawImage(offCanvas, 0, 0);
 }
 // export const isEqualImgDatas = ({ imgData1, imgData2 }) => {

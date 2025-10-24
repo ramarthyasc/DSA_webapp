@@ -1,10 +1,16 @@
 .handler {
   background-color: orange;
-  border: 1px solid black;
+  border: 1px solid grey;
+  width: 10px;
+}
+
+.handler.pulling {
+  background-color: darkgray;
+  border: 1px solid grey;
   width: 10px;
 }
 
 .handler:hover {
-  background-color: darkorange;
+  background-color: darkgray;
   cursor: ew-resize;
 }

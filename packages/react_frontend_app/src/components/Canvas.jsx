@@ -91,6 +91,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
   });
   const offContextRef = useRef();
   const offCanvasRef = useRef();
+  const isPendingRef = useRef(-1);
 
   //only if I hadn't set undoRedoArray in local storage, then only implement the below.
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
@@ -152,12 +153,10 @@ export const Canvas = forwardRef((props, canvasRef) => {
     //styles : 
     if (isInsideButtonRegion({ x0: 0, x1: 158, y0: 0, y1: 30 }, { offsetX, offsetY }) ||
       isInsideButtonRegion({ x0: width - 94, x1: width, y0: 0, y1: 30 }, { offsetX, offsetY })) {
-      console.log("helo")
       canvasRef.current.style.cursor = "pointer";
     } else if (colorPaletteIsOnRef.current && isInsideButtonRegion({
       x0: colorPaletteCoords[0][0], x1: colorPaletteCoords.at(-1)[0] + 30, y0: 0, y1: 30
     }, { offsetX, offsetY })) {
-      console.log('yey')
       canvasRef.current.style.cursor = "pointer";
     } else {
       canvasRef.current.style.cursor = "crosshair";
@@ -607,7 +606,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // So that when we draw, it's accurate visually wrt the coordinates i had given to draw.
     canvas.width = width * scale; //canvas.width and canvas.height only include internal drawing buffer. ie; it doesn't include Border & Paddings
     canvas.height = height * scale; // so we have to find an equivalent css pixel width (style.width) to scale it to get canvas.width or height
-    console.log(canvas.height, canvas.width);
 
 
     const ctx = canvas.getContext('2d');
@@ -706,12 +704,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // on mouseUpRef on any place on window or if the user leaves the browser, turn mouseUpRef = true
     function handleMouseUpOrLeaveWindow(e) {
 
-      // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
-      if (whichShapeSelectedRef.current.pencil) {
-        contextRef.current.beginPath();
-        offContextRef.current.beginPath();
-      }
-      //
 
       if (isDrawingRef.current) {// works only for 1 mouse up outside the canvas
 
@@ -749,10 +741,22 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
         } else if (whichShapeSelectedRef.current.pencil) {
 
-          shapePrototypesRef.current.pencilDraw.color = colorsRef.current[0];
-          undoRedoArrayPusher(shapePrototypesRef.current, "pencilDraw");
-          //reset the shapePrototypesRef to []
-          shapePrototypesRef.current.pencilDraw.props = [];
+          // The callback function of this requestAnimation runs only after requestAnimation callback of handleMousemove
+          // as the it is queued first
+          requestAnimationFrame(() => {
+            shapePrototypesRef.current.pencilDraw.color = colorsRef.current[0];
+            undoRedoArrayPusher(shapePrototypesRef.current, "pencilDraw");
+            //reset the shapePrototypesRef to []
+            shapePrototypesRef.current.pencilDraw.props = [];
+
+            // cut the previous path when you do mouseup for pencil (Otherwise the cleared paths will get displayed)
+            contextRef.current.beginPath();
+            offContextRef.current.beginPath();
+            //
+            //reset isPendingRef
+            isPendingRef.current = -1;
+
+          })
         }
 
         console.log(JSON.parse(window.localStorage.getItem("undoRedoArray")));
@@ -768,16 +772,33 @@ export const Canvas = forwardRef((props, canvasRef) => {
     window.addEventListener("mouseup", handleMouseUpOrLeaveWindow);
 
     function handleMouseMoveWindow(e) {
+
       // Drawing of shapes on the Canvas : (The continuation from OnMouseDown)
       //
       if (isDrawingRef.current) {
 
         if (whichShapeSelectedRef.current.pencil) { /// by default, pencil is true
-          /// for pencil === true
-          //Draw on both canvas pixels
-          drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
-          drawPencil(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
-          shapePrototypesRef.current.pencilDraw.props.push([e.clientX, e.clientY, shapeInitialCoordRef.current]);
+
+          isPendingRef.current += 1;
+          //increase the below 10 to have no curve effect when free hand drawing
+          if (isPendingRef.current === 10) { isPendingRef.current = 0; }
+          if (isPendingRef.current === 0) {
+            requestAnimationFrame(() => {
+              /// for pencil === true
+              //Draw on both canvas pixels
+              drawPencil(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+              drawPencil(offContextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
+              shapePrototypesRef.current.pencilDraw.props.push([e.clientX, e.clientY, shapeInitialCoordRef.current]);
+
+              buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+              Object.keys(whichShapeSelectedRef.current).forEach((key) => {
+                if (whichShapeSelectedRef.current[key]) {
+                  buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true },
+                    colorPaletteImgDataRef.current, colorsRef.current[0], key);
+                }
+              })
+            })
+          }
         }
 
         if (whichShapeSelectedRef.current.rectangle) {
@@ -802,7 +823,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
         //Other shapes to be implemented
         //
         //
-
         buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
         Object.keys(whichShapeSelectedRef.current).forEach((key) => {
           if (whichShapeSelectedRef.current[key]) {
@@ -826,24 +846,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
   }, [])
 
-  // useEffect(() => {
-  //   const canvas = canvasRef.current;
-  //   const style = getComputedStyle(canvas);
-  //
-  //   if (props.mouseDownSlider) {
-  //     // we want the image of canvas before colorPalette is turned on. PutImage will not be scaled - it will be directly printed on canvas pixels
-  //     // It's an advantage for us
-  //     if (!colorPaletteIsOnRef.current) {
-  //       imgDataRef.current = copyDrawableCanvas(contextRef.current, style);
-  //     } else {
-  //       // if colorPalette is on, then, imgDataRef.current will be already filled with Imagedata of drawable canvas without palette
-  //       colorPaletteIsOnRef.current = false;
-  //     }
-  //     props.setMouseDownSlider(false);
-  //   }
-  //   // WE will use this imgDataRef to 
-  //
-  // }, [props.mouseDownSlider])
 
   // onMouseMove is a mine
   return <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}

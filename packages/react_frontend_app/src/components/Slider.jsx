@@ -28,6 +28,7 @@ function Slider(props) {
       const canvas = props.canvasRef.current;
       const style = getComputedStyle(canvas);
       document.body.style.cursor = "default";
+      document.querySelector('.handler').classList.remove("pulling");
 
       onSliderRef.current = false;
       widthRef.current = parseFloat(style.width); //Update the canvas width after stopping the resizing
@@ -40,6 +41,8 @@ function Slider(props) {
         requestAnimationFrame(() => {
           if (onSliderRef.current) {
             document.body.style.cursor = "ew-resize";
+            document.querySelector('.handler').classList.add("pulling");
+
             const { clientX } = e;
             const canvas = props.canvasRef.current;
             // we use getComputedStyle to get style instead of using canvas.style- bcs, canvas.style only works if the DOM element has inline styles,
@@ -54,6 +57,7 @@ function Slider(props) {
               } else {
                 onSliderRef.current = false;
                 document.body.style.cursor = "default";
+                document.querySelector('.handler').classList.remove("pulling");
               }
             } else {
               // resize the canvas element in the direction of mouse movement

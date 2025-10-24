@@ -21,6 +21,7 @@ function Drawboard() {
         <Question />
         <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
         <Canvas ref={canvasRef} canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
+        {/* <div className='rightMargin'></div> */}
       </div>
     </>
 
