@@ -9,7 +9,7 @@ canvas {
   margin-right: 10px;
   box-shadow: 10px 0 0 0 orange;
   width: 500px;
-  height: 907px;
+  height: calc(100vh - 52px);
 }
 
 canvas:hover {

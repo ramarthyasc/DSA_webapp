@@ -11,10 +11,12 @@ const userbaseRouter = require('./routers/userbaseRouter.js');
 const { userLoginGet, userLoginAuthPost } = require('./controller/loginController.js');
 const { jwtVerification, userHomeGet, userProblemsetGet } = require('./controller/secureController.js')
 const { gameDetailGet } = require('./controller/gameDetailController.js');
+
 const { googleJwtVerifyPost, jwtRefreshTokenCreatorPost } = require('./controller/drawLoginController.js');
 const { rotatingRefreshTokenAndJwt } = require('./controller/drawRotRefreshTokenController.js');
 const { secureRouteGet } = require('./controller/drawSecureRouteController.js')
 const { preflightOptionsSetter, corsAllowResponseSetter } = require('./controller/drawCorsController.js');
+const { questionsGet } = require('./controller/drawQuestionsController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -78,8 +80,10 @@ app.get('/algogame/:id', gameDetailGet);
 
 app.options('/*splat', preflightOptionsSetter);
 app.post('/draw-login', corsAllowResponseSetter, googleJwtVerifyPost, jwtRefreshTokenCreatorPost);
-app.get('/draw-secure', corsAllowResponseSetter, rotatingRefreshTokenAndJwt, secureRouteGet);
-app.post("/draw-secure", corsAllowResponseSetter, rotatingRefreshTokenAndJwt);
+app.route('/draw-secure')
+  .get(corsAllowResponseSetter, rotatingRefreshTokenAndJwt, secureRouteGet)
+  .post(corsAllowResponseSetter, rotatingRefreshTokenAndJwt);
+app.get("/draw-question{/:question}", questionsGet) // {/:question} is optional. ie; / is optional ,and the route param is optional
 
 // app.post("/draw-secure/draw", corsAllowResponseSetter, drawPost);
 //Can use the rotatingRefreshTokenAndJwt controller for any website which needs Rotating Refresh token system

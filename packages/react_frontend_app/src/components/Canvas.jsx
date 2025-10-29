@@ -1,5 +1,5 @@
 import '../styles/Canvas.css';
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import {
   setDrawProps, buttonImagesCreator, buttonRender, startPencilDraw, drawPencil, drawDot, drawRectangle, drawCircle, drawLine,
   clearCanvas, isInsideButtonRegion, buttonFinder, isOutsideButton, colorPaletteImagesCreator, colorPaletteRender, copyDrawableCanvas,
@@ -11,6 +11,8 @@ import { forwardRef } from 'react';
 // NOTE : When you do 'X', and you have an 'X' already in the array behind the current 'X', then clear the previous 'X'
 // and elements before them
 // ie; There will be only one "X" in the array at a time.
+
+// NOTE : Buttons are rendered only on the Drawable canvas - not on the Offscreen canvas. Offscreen canvas used only for Drawings
 
 //forwardRef function returns a Component (which returns a jsx). Here, we used this bcs to transfer ref from the parent
 export const Canvas = forwardRef((props, canvasRef) => {
@@ -92,6 +94,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
   const offContextRef = useRef();
   const offCanvasRef = useRef();
   const isPendingRef = useRef(-1);
+  const [innerHeight, setInnerHeight] = useState(window.innerHeight);
 
   //only if I hadn't set undoRedoArray in local storage, then only implement the below.
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
@@ -571,8 +574,9 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // Initialize the Canvas
     //
     const canvas = canvasRef.current;
-    //get the CSS pixels or CSS size of the canvas's content box only. Not including border or padding. --VERY IMPORTANT
-    const style = getComputedStyle(canvas);
+    //get the CSS pixels or CSS size of the canvas's content box only (as css's box-sizing is set to content-box for the Canvas.css). 
+    //Not including border or padding. --VERY IMPORTANT
+    const style = getComputedStyle(canvas); // gets the CSS width & height of the canvas
     const width = parseFloat(style.width);
     const height = parseFloat(style.height);
     // putImageData doesn't care about scaling - and only draws exactly on Canvas pixels.(doesn't get scaled). So Buttons and Line/Rectangle/Circle
@@ -590,8 +594,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
     // CONTEXT or CTX = Gives you the Drawing coordinates inside the Canvas (Internal drawing space only. Doesn't include padding or borders). This
     // is the same as Canvas pixels. The Coordinates of Canvas pixels is Context/ CTX.  NOTE : IMPPPP PLAYER
     // When we give values of Coordinates, as a human, we give what we visually see- Which is - the no. of pixels of css is given to the ctx as coordinates.
-    // So we need to scale it so that the machine could understand where to draw. CSS/VISUAL/STYLE PIXELS in the Canvas area. --
-    // We can change how many CSS/visual pixels are there in the canvas area. Using ctx.
+    // So we need to scale it so that the machine could understand the coordinate values given by us (which is the css pixels dimensions we give)
     // 
     // For example, the portion of the canvas can have width of 600 CSS pixels.
     // The canvas will be 1200 Canvas pixels - on which we draw.
@@ -650,20 +653,22 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
 
 
-  }, [])
+  }, [innerHeight]);
 
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const style = getComputedStyle(canvas);
     const width = parseFloat(style.width);
+    const height = parseFloat(style.height);
     const scale = 1; //window.devicePixelRatio;
-    //SETTING CANVAS.WIDTH or HEIGHT CLEARS ALL THE CANVAS PIXELS TO TRANSPARENT PIXELS (0,0,0,0) - same as doing clearRect on full viewable canvas 
+    //SETTING CANVAS.WIDTH & HEIGHT CLEARS ALL THE CANVAS PIXELS TO TRANSPARENT PIXELS (0,0,0,0) - same as doing clearRect on full viewable canvas 
     // Resets : 
-    // - All pixels
+    // - All pixels in both height and width
     // - All context states (lineWidth, fillStyle, strokeStyle, etc..)
-    // - Resets transformation matrix - same as calling ctx.resetTransform()
+    // - Resets transformation matrix in both width and height of each pixel- same as calling ctx.resetTransform()
     canvas.width = width * scale;
+    canvas.height = height * scale;
 
     contextRef.current = canvas.getContext('2d');
     contextRef.current.scale(scale, scale);
@@ -674,7 +679,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
     pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
     if (colorPaletteIsOnRef.current) { colorPaletteIsOnRef.current = false };
 
-    // Buttons Render
+    // Buttons Rendered only on the Drawable canvas - not on the Offscreen canvas. Offscreen canvas used only for Drawings
     buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
     // This is put here, becasue canvasRef won't get initiated before canvas element is rendered
@@ -692,7 +697,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
       }
     })
 
-  }, [props.canvasEdgeMotionCoord])
+  }, [props.canvasEdgeMotionCoord, innerHeight])
 
 
   // Event listener attacher - after the useEffects above is run
@@ -780,8 +785,8 @@ export const Canvas = forwardRef((props, canvasRef) => {
         if (whichShapeSelectedRef.current.pencil) { /// by default, pencil is true
 
           isPendingRef.current += 1;
-          //increase the below 10 to have no curve effect when free hand drawing
-          if (isPendingRef.current === 10) { isPendingRef.current = 0; }
+
+          if (isPendingRef.current === 5) { isPendingRef.current = 0; }
           if (isPendingRef.current === 0) {
             requestAnimationFrame(() => {
               /// for pencil === true
@@ -837,12 +842,17 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
     window.addEventListener("mousemove", handleMouseMoveWindow)
 
+    const handleZoom = () => {
+      setInnerHeight(window.innerHeight);
+    }
+    window.addEventListener("resize", handleZoom);
 
     //cleanup the event handlers
     return () => {
       window.removeEventListener("mouseleave", handleMouseUpOrLeaveWindow);
       window.removeEventListener("mouseup", handleMouseUpOrLeaveWindow);
       window.removeEventListener("mousemove", handleMouseMoveWindow)
+      window.removeEventListener("resize", handleZoom);
     }
   }, [])
 

@@ -1,9 +1,11 @@
-import '../styles/Question.css';
+import "../styles/Question.css";
 
-export function Question() {
+export function Question(props) {
+  const question = props.question;
   return (
-    <div className="question">
-      Hello how are you doing
+    <div id="question">
+      <h2 id="q-title">{question.title}</h2>
+      <p>{question.difficulty}</p>
     </div>
   )
 }

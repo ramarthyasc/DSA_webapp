@@ -1,0 +1,8 @@
+.question {
+  width: 50%;
+  /* border: 1px solid black; */
+  flex: 2;
+  font-family: "JetBrains Mono", monospace;
+  font-style: normal;
+  color: black;
+}

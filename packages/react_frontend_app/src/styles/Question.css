@@ -1,5 +1,11 @@
-.question {
-  width: 50%;
-  /* border: 1px solid black; */
-  flex: 2;
+#question {
+  outline: 1px solid black;
+  padding: 20px;
+  margin: 10px;
+  text-align: left;
+  overflow-y: scroll;
+}
+
+#q-title {
+  margin-bottom: 10px;
 }
