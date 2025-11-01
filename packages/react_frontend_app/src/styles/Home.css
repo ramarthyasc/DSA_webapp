@@ -34,7 +34,7 @@
 }
 
 
-button {
+.play button {
   padding: 2vw;
   clip-path: polygon(4% 20%,
       0% 80%,
@@ -54,7 +54,7 @@ button {
 }
 
 
-button:hover {
+.play button:hover {
   left: 3px;
   cursor: crosshair;
   color: lightcyan;
@@ -98,7 +98,7 @@ button:hover {
     font-size: 10vw;
   }
 
-  button {
+  .play button {
     padding: 7vw;
     font-size: 3vh;
 

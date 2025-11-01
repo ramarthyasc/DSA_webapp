@@ -1,6 +1,7 @@
 import '../styles/QuestionTab.css';
 import { useRef, useState, useEffect } from 'react';
 import { Question } from '../components/Question.jsx';
+import { Buttons } from './Buttons.jsx';
 
 export function QuestionTab() {
   const questionsListRef = useRef(null);
@@ -65,8 +66,8 @@ export function QuestionTab() {
 
   } else {
     return (
-      <div className="question">
-        {/* <Buttons /> */}
+      <div className="question-tab">
+        <Buttons />
         <Question question={question} />
       </div>
     )

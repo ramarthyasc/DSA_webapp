@@ -95,6 +95,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
   const offCanvasRef = useRef();
   const isPendingRef = useRef(-1);
   const [innerHeight, setInnerHeight] = useState(window.innerHeight);
+  const [innerWidth, setInnerWidth] = useState(window.innerWidth);
 
   //only if I hadn't set undoRedoArray in local storage, then only implement the below.
   if (!JSON.parse(window.localStorage.getItem("undoRedoArray"))) {
@@ -198,6 +199,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
           y0: buttonCoordRef.current[button].y0, y1: buttonCoordRef.current[button].y1
         }, { offsetX, offsetY })) {
 
+          console.log("hello")
           buttonRender(contextRef.current, style, buttonsImgDataRef.current, { highlight: true }, colorPaletteImgDataRef.current,
             colorsRef.current[0], button);
 
@@ -618,7 +620,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     //
     // putImageData doesn't care about scaling - and only draws exactly on Canvas pixels.(doesn't get scaled). So Buttons and Line/Rectangle/Circle
     // rendering won't be done correctly when zoomed in the webapp and refreshed.
-    ctx.resetTransform();
     ctx.scale(scale, scale);
 
 
@@ -653,7 +654,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
     }
 
 
-  }, [innerHeight]);
+  }, [innerHeight, innerWidth]);
 
 
   useEffect(() => {
@@ -679,8 +680,6 @@ export const Canvas = forwardRef((props, canvasRef) => {
     pasteOffscreenCanvas(contextRef.current, offCanvasRef.current);
     if (colorPaletteIsOnRef.current) { colorPaletteIsOnRef.current = false };
 
-    // Buttons Rendered only on the Drawable canvas - not on the Offscreen canvas. Offscreen canvas used only for Drawings
-    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
 
     // This is put here, becasue canvasRef won't get initiated before canvas element is rendered
     buttonCoordRef.current['x'] = {
@@ -690,14 +689,17 @@ export const Canvas = forwardRef((props, canvasRef) => {
     buttonCoordRef.current["redo"] = { x0: width - 62, x1: width - 32, y0: 0, y1: 30 }
     buttonCoordRef.current["undo"] = { x0: width - 94, x1: width - 64, y0: 0, y1: 30 }
 
-    /// drawPencil is active by default. So color the button bg
+    // Buttons Rendered only on the Drawable canvas - not on the Offscreen canvas. Offscreen canvas used only for Drawings
+    buttonRender(contextRef.current, style, buttonsImgDataRef.current, { normal: true }, colorPaletteImgDataRef.current, colorsRef.current[0]);
+
+    /// select the active button
     Object.keys(whichShapeSelectedRef.current).forEach((key) => {
       if (whichShapeSelectedRef.current[key]) {
         buttonRender(contextRef.current, style, buttonsImgDataRef.current, { select: true }, colorPaletteImgDataRef.current, null, key);
       }
     })
 
-  }, [props.canvasEdgeMotionCoord, innerHeight])
+  }, [props.canvasEdgeMotionCoord, innerHeight, innerWidth])
 
 
   // Event listener attacher - after the useEffects above is run
@@ -808,7 +810,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
         if (whichShapeSelectedRef.current.rectangle) {
           /// for rectangle === true /// getImageData is done on MouseDown
-          //The pasteDrawableCanvas is for not rendering many rectangles
+          //The pasteDrawableCanvas is for preventing rendering many rectangles
           pasteDrawableCanvas(contextRef.current, imgDataRef.current);
           drawRectangle(contextRef.current, { clientX: e.clientX, clientY: e.clientY }, shapeInitialCoordRef.current);
         }
@@ -844,6 +846,7 @@ export const Canvas = forwardRef((props, canvasRef) => {
 
     const handleZoom = () => {
       setInnerHeight(window.innerHeight);
+      setInnerWidth(window.innerWidth);
     }
     window.addEventListener("resize", handleZoom);
 

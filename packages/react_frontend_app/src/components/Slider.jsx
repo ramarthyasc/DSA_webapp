@@ -8,9 +8,20 @@ function Slider(props) {
   const pendingRef = useRef(false);
 
   function handleMouseDown({ nativeEvent }) {
+    if (nativeEvent.button !== 0) return;
     const { clientX, clientY } = nativeEvent;
     onSliderRef.current = true;
     mouseDownCoordSliderRef.current = [clientX, clientY];
+    // removes selections when clicking on slider - to avoid dragging the text when sliding the slider after selection
+    if (window.getSelection) {
+      window.getSelection().removeAllRanges();
+    }
+  }
+  function handleMouseUp() {
+    // removes selections when mouseUp on slider - to avoid dragging the text when sliding the slider after selection
+    if (window.getSelection) { //checks if there is a method getSelection defined on window - checks for older browsers
+      window.getSelection().removeAllRanges();
+    }
   }
 
   useEffect(() => {
@@ -20,7 +31,7 @@ function Slider(props) {
     const style = getComputedStyle(canvas);
     // We only need the initial style.width. 
     widthRef.current = parseFloat(style.width);
-    document.body.style.userSelect = "none"; // don't allow to select text - which can allow dragging of text. Which will interfere with resizing
+    // document.body.style.userSelect = "none"; // don't allow to select text - which can allow dragging of text. Which will interfere with resizing
     // of canvas when i select text and then try to drag the slider, instead of the slider, the text is moved/dragged 
 
 
@@ -33,6 +44,7 @@ function Slider(props) {
       onSliderRef.current = false;
       widthRef.current = parseFloat(style.width); //Update the canvas width after stopping the resizing
     }
+
 
     function handleWindowMouseMove(e) {
       if (!pendingRef.current) {
@@ -82,13 +94,13 @@ function Slider(props) {
     return () => {
       window.removeEventListener("mouseup", handleWindowMouseUp);
       window.removeEventListener("mousemove", handleWindowMouseMove);
-      document.body.style.userSelect = "";
+      // document.body.style.userSelect = "";
     }
 
   }, [])
 
   return (
-    <div className="handler" onMouseDown={handleMouseDown} ></div>
+    <div className="handler" onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}></div>
   )
 }
 

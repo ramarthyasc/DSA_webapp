@@ -1,6 +1,7 @@
-.question {
-  width: 50%;
+.question-tab {
   /* border: 1px solid black; */
+  display: flex;
+  flex-direction: column;
   flex: 2;
   font-family: "JetBrains Mono", monospace;
   font-style: normal;

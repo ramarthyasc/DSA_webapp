@@ -5,8 +5,8 @@ exports.questionDetailsList = {
     id: "trapping-rain-water",
     title: "Trapping Rain Water",
     difficulty: "Hard",
-    description: "You are given an array of non-negative integers height which represent an elevation map. Each value height[i] represents the height of a bar, which has a width of 1." +
-      "\n\n Return the maximum area of water that can be trapped between the bars.",
+    description: "You are given an array of non-negative integers height which represent an elevation map. Each value height[i] represents the height of a bar, which has a width of one." +
+      "\n\nReturn the maximum area of water that can be trapped between the bars.",
     examples: [
       {
         id: 0,

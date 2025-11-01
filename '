@@ -1,0 +1,47 @@
+import { useId, useRef } from "react"
+import "../styles/ButtonComponent.css"
+
+export function ButtonComponent(props) {
+
+  const buttonId = useId();
+  const mouseDownRef = useRef(false);
+
+  function handleMouseDown() {
+    mouseDownRef.current = true;
+    document.getElementById(buttonId).className = "button-highlight";
+  }
+  function handleMouseUp() {
+    if (props.buttonName === "Question") {
+      // change the question using a state
+
+    } else if (props.buttonName === "Solution") {
+      //...
+    }
+    document.getElementById(buttonId).className = "button-select";
+    mouseDownRef.current = false;
+  }
+
+  function handleMouseLeave() {
+    if (mouseDownRef.current) {
+      mouseDownRef.current = false;
+    }
+
+    const className = document.getElementById(buttonId).className;
+    if (className !== "button-select") {
+      document.getElementById(buttonId).className = "button-normal";
+    }
+  }
+  function handleMouseMove() {
+    const className = document.getElementById(buttonId).className;
+    if (className !== "button-select") {
+      document.getElementById(buttonId).className = "button-hover";
+    }
+    document.getElementById(buttonId).classList.add("button-hover") = ;
+  }
+
+  return (
+    <div id={buttonId} onMouseMove={handleMouseMove} onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave} onMouseUp={handleMouseUp}>{props.buttonName}</div>
+
+  )
+}
