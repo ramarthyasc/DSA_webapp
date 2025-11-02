@@ -5,6 +5,7 @@ import { QuestionTab } from '../components/QuestionTab';
 import Slider from '../components/Slider';
 import '../styles/Drawboard.css';
 import { useRef, useState } from 'react';
+import { DrawboardContext } from '../context/DrawboardContext';
 
 
 function Drawboard() {
@@ -15,17 +16,37 @@ function Drawboard() {
   const [canvasEdgeMotionCoord, setCanvasEdgeMotionCoord] = useState(null);
 
 
-  return (
-    <>
-      <div className='space'>
-        <QuestionTab />
-        <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
-        <Canvas ref={canvasRef} canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
-      </div>
-    </>
+
+  const [isCoding, setIsCoding] = useState(false);
+
+  if (!isCoding) {
+    return (
+      <>
+        <div className='space'>
+          <DrawboardContext.Provider value={{ isCoding, setIsCoding }} >
+            <QuestionTab />
+          </DrawboardContext.Provider>
+          <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
+          <Canvas ref={canvasRef} canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
+        </div>
+      </>
+    )
+
+  } else {
+    return (
+
+      <>
+        <div className='space'>
+          <DrawboardContext.Provider value={{ isCoding, setIsCoding }} >
+            <QuestionTab />
+          </DrawboardContext.Provider>
+          <textarea name="coding" id="coding"></textarea>
+        </div>
+      </>
+    )
+  }
 
 
-  )
 }
 
 export default Drawboard;

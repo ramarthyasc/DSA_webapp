@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Question } from '../components/Question.jsx';
 import { Buttons } from './Buttons.jsx';
 
-export function QuestionTab() {
+export function QuestionTab(props) {
   const questionsListRef = useRef(null);
   const [question, setQuestion] = useState(null);
 

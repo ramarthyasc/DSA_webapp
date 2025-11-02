@@ -1,7 +1,10 @@
 import { useId, useRef } from "react"
 import "../styles/ButtonComponent.css"
+import { useContext } from "react";
+import { DrawboardContext } from "../context/DrawboardContext";
 
 export function ButtonComponent(props) {
+  const { isCoding, setIsCoding } = useContext(DrawboardContext);
 
   const buttonId = useId();
   const mouseDownRef = useRef(false);
@@ -15,6 +18,8 @@ export function ButtonComponent(props) {
 
   }
   function handleMouseUp() {
+
+    console.log("hey")
     if (props.buttonName === "Question") {
       // change the question component using a state
       // turn all other selected buttons to normal
@@ -22,8 +27,14 @@ export function ButtonComponent(props) {
     } else if (props.buttonName === "Solution") {
       //...
       // turn all other selected buttons to normal
-    } else if (props.buttonSpecial === "codeSpace") {
+    } else if (props.buttonSpecial === "code-space") {
       // turn all other selected buttons to normal
+      console.log("hello")
+      if (!isCoding) {
+        setIsCoding(true);
+      } else {
+        setIsCoding(false);
+      }
 
     }
     if (mouseDownRef.current) {
