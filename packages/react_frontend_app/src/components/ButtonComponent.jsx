@@ -1,10 +1,10 @@
 import { useId, useRef } from "react"
 import "../styles/ButtonComponent.css"
 import { useContext } from "react";
-import { DrawboardContext } from "../context/DrawboardContext";
+import { QuestionContext } from "../context/QuestionContext";
 
 export function ButtonComponent(props) {
-  const { isCoding, setIsCoding } = useContext(DrawboardContext);
+  const { isCoding, setIsCoding } = useContext(QuestionContext);
 
   const buttonId = useId();
   const mouseDownRef = useRef(false);
@@ -19,7 +19,6 @@ export function ButtonComponent(props) {
   }
   function handleMouseUp() {
 
-    console.log("hey")
     if (props.buttonName === "Question") {
       // change the question component using a state
       // turn all other selected buttons to normal
@@ -27,27 +26,30 @@ export function ButtonComponent(props) {
     } else if (props.buttonName === "Solution") {
       //...
       // turn all other selected buttons to normal
-    } else if (props.buttonSpecial === "code-space") {
-      // turn all other selected buttons to normal
-      console.log("hello")
-      if (!isCoding) {
-        setIsCoding(true);
-      } else {
-        setIsCoding(false);
+    }
+
+    if (mouseDownRef.current) {
+
+      mouseDownRef.current = false;
+
+      //for code-button
+      if (props.buttonSpecial) {
+        document.getElementById(buttonId).className = `${props.buttonSpecial} button-general button-normal`; // for code-Button
+        if (!isCoding) {
+          setIsCoding(true);
+        } else {
+          setIsCoding(false);
+        }
+        return;
       }
 
-    }
-    if (mouseDownRef.current) {
       if (buttonSelectedRef.current) {
         document.getElementById(buttonId).className = "button-general button-normal";
-        props.buttonSpecial && document.getElementById(buttonId).classList.add(props.buttonSpecial); // for code-Button
         buttonSelectedRef.current = false;
       } else {
         document.getElementById(buttonId).className = "button-general button-select";
-        props.buttonSpecial && document.getElementById(buttonId).classList.add(props.buttonSpecial); // for code-Button
         buttonSelectedRef.current = true;
       }
-      mouseDownRef.current = false;
     }
   }
 
@@ -56,12 +58,16 @@ export function ButtonComponent(props) {
       mouseDownRef.current = false;
     }
 
+    //for code-button
+    if (props.buttonSpecial) {
+      document.getElementById(buttonId).className = `${props.buttonSpecial} button-general button-normal`; // for code-Button
+      return;
+    }
+
     if (!buttonSelectedRef.current) {
       document.getElementById(buttonId).className = "button-general button-normal";
-      props.buttonSpecial && document.getElementById(buttonId).classList.add(props.buttonSpecial); // for code-Button
     } else {
       document.getElementById(buttonId).className = "button-general button-select";
-      props.buttonSpecial && document.getElementById(buttonId).classList.add(props.buttonSpecial); // for code-Button
     }
   }
 

@@ -12,8 +12,7 @@ export default defineConfig({
       '/draw-login': 'http://localhost:5000',
       '/draw-secure': 'http://localhost:5000',
       '/draw-question': 'http://localhost:5000',
-
-
+      '/draw-submit': 'http://localhost:5000',
     },
 
   }

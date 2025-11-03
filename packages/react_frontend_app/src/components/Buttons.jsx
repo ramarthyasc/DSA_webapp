@@ -1,7 +1,10 @@
 import "../styles/Buttons.css";
 import { ButtonComponent } from "./ButtonComponent";
+import { useContext } from "react";
+import { QuestionContext } from "../context/QuestionContext";
 
 export function Buttons() {
+  const { isCoding } = useContext(QuestionContext);
   return (
     <div className="question-buttons">
       <div className="left-buttons">
@@ -9,7 +12,7 @@ export function Buttons() {
         <ButtonComponent buttonName="Solution" />
       </div>
       <div className="code-button">
-        <ButtonComponent buttonName="CODE-SPACE ------>" buttonSpecial="code-space" />
+        <ButtonComponent buttonName={isCoding ? "<------ DRAW-BOARD" : "CODE-SPACE ------>"} buttonSpecial="code-space" />
         {/* <div>CODE-SPACE ------&gt;</div> */}
       </div>
     </div>

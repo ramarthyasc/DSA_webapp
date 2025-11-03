@@ -1,0 +1,10 @@
+#code-form {
+  height: calc(50vh);
+  width: 70.55%;
+}
+
+textarea {
+  background-color: #f9faf4;
+  height: calc(50vh);
+  width: 100%;
+}

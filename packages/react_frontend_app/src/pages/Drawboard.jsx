@@ -5,8 +5,8 @@ import { QuestionTab } from '../components/QuestionTab';
 import Slider from '../components/Slider';
 import '../styles/Drawboard.css';
 import { useRef, useState } from 'react';
-import { DrawboardContext } from '../context/DrawboardContext';
-
+import { QuestionContext } from '../context/QuestionContext';
+import { CodeSpace } from '../components/CodeSpace';
 
 function Drawboard() {
   const user = useOutletContext();
@@ -23,9 +23,9 @@ function Drawboard() {
     return (
       <>
         <div className='space'>
-          <DrawboardContext.Provider value={{ isCoding, setIsCoding }} >
+          <QuestionContext.Provider value={{ isCoding, setIsCoding }} >
             <QuestionTab />
-          </DrawboardContext.Provider>
+          </QuestionContext.Provider>
           <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} />
           <Canvas ref={canvasRef} canvasEdgeMotionCoord={canvasEdgeMotionCoord} />
         </div>
@@ -37,10 +37,11 @@ function Drawboard() {
 
       <>
         <div className='space'>
-          <DrawboardContext.Provider value={{ isCoding, setIsCoding }} >
+          <QuestionContext.Provider value={{ isCoding, setIsCoding }} >
             <QuestionTab />
-          </DrawboardContext.Provider>
-          <textarea name="coding" id="coding"></textarea>
+          </QuestionContext.Provider>
+          {/* <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} /> */}
+          <CodeSpace />
         </div>
       </>
     )

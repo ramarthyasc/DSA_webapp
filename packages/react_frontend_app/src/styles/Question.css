@@ -5,8 +5,9 @@
   border-style: solid;
   padding: 20px;
   text-align: left;
-  overflow-y: scroll;
+  overflow-y: auto;
   flex: 2;
+  /* height: calc(100vh - 52px); */
 }
 
 #hard {

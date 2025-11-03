@@ -18,7 +18,7 @@ function Home() {
           <p>Solve algorithms with drawing pad, then code</p>
         </div>
         <div className='play'>
-          <Link to="/drawboard">
+          <Link to="/draw-code">
             <button >Play</button>
           </Link>
         </div>

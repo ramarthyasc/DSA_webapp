@@ -2,8 +2,9 @@
   /* border: 1px solid black; */
   display: flex;
   flex-direction: column;
-  flex: 2;
+  flex: 1;
   font-family: "JetBrains Mono", monospace;
   font-style: normal;
   color: black;
+  height: calc(100vh - 50px);
 }
