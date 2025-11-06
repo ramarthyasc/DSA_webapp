@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@theme {
+  --jet-brains: "JetBrains Mono", monospace;
+}
