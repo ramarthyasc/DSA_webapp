@@ -13,13 +13,14 @@ export function CodeSpace() {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+    const formDataObject = Object.fromEntries(formData.entries());
     const res = fetch("/draw-submit", {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(formDataObject),
     })
 
     if (res.ok) {

@@ -17,6 +17,7 @@ const { rotatingRefreshTokenAndJwt } = require('./controller/drawRotRefreshToken
 const { secureRouteGet } = require('./controller/drawSecureRouteController.js')
 const { preflightOptionsSetter, corsAllowResponseSetter } = require('./controller/drawCorsController.js');
 const { questionsGet } = require('./controller/drawQuestionsController.js');
+const { submitPost } = require('./controller/drawCompilerController.js');
 
 const USERS = [];
 const QUESTIONS = [{
@@ -84,7 +85,7 @@ app.route('/draw-secure')
   .get(corsAllowResponseSetter, rotatingRefreshTokenAndJwt, secureRouteGet)
   .post(corsAllowResponseSetter, rotatingRefreshTokenAndJwt);
 app.get("/draw-question{/:question}", corsAllowResponseSetter, questionsGet); // {/:question} is optional. ie; / is optional ,and the route param is optional
-// app.post("/draw-submit", corsAllowResponseSetter, submitPost);
+app.post("/draw-submit", corsAllowResponseSetter, submitPost);
 
 // app.post("/draw-secure/draw", corsAllowResponseSetter, drawPost);
 //Can use the rotatingRefreshTokenAndJwt controller for any website which needs Rotating Refresh token system
