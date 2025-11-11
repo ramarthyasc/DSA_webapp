@@ -64,6 +64,7 @@ function Slider(props) {
             if (parseFloat(style.width) < 410) {
               if (clientX - mouseDownCoordSliderRef.current[0] <= 0) {
                 // resize the canvas element in the direction of mouse movement
+                console.log("how")
                 canvas.style.width = (widthRef.current - (clientX - mouseDownCoordSliderRef.current[0])) + "px";
                 props.setCanvasEdgeMotionCoord(e.clientX);
               } else {
@@ -75,6 +76,7 @@ function Slider(props) {
               // resize the canvas element in the direction of mouse movement
               canvas.style.width = (widthRef.current - (clientX - mouseDownCoordSliderRef.current[0])) + "px";
               props.setCanvasEdgeMotionCoord(e.clientX);
+              console.log("hellooooo")
             }
           }
 

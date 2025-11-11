@@ -1,15 +1,19 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, forwardRef } from "react";
+import { HorizVertSlider } from "./HorizVertSlider.jsx";
+import { ResultBox } from "./ResultBox.jsx";
 
 // store scrollHeight as localStorage, so that the Height is always there even when changing pages and unmounted
 
 
-export function CodeSpace() {
+export const CodeSpace = forwardRef((props, codespaceRef) => {
   const textAreaRef = useRef(null);
   const numberAreaRef = useRef(null);
   const pastScrollHeightRef = useRef();
   const maxLineNumberRef = useRef();
+  const [result, setResult] = useState();
+  const resultBoxRef = useRef();
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
 
     const formData = new FormData(e.target);
@@ -23,9 +27,21 @@ export function CodeSpace() {
       body: JSON.stringify(formDataObject),
     })
 
-    if (res.ok) {
-      const answer = await res.json();
-    }
+    res
+      .then((res) => {
+        // res.json is res.text + JSON.parse().
+        // res.text is the promise in which it internally receives buffer streams from the server, and then it concats it, parses to a string,
+        // then sends the resolve
+        // ie; the concated string parsed version.
+        return res.text();
+      })
+      .then((text) => {
+        setResult(text);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+
   }
 
   function handleScroll(e) {
@@ -72,12 +88,27 @@ export function CodeSpace() {
   return (
     // implement uneditable numbers along the left side +
     // backend verification
-    <form className="flex font-(family-name:--jet-brains) h-full" id="code-form" onSubmit={handleSubmit}>
-      <textarea ref={numberAreaRef} disabled id="row-number" className="text-right border border-black w-10 overflow-hidden resize-none pt-3" cols="1" >
-      </textarea>
-      <textarea ref={textAreaRef} onScroll={handleScroll} className="border border-black resize-none pl-3 pt-3" cols="130" name="code" id="code" ></textarea>
-      <button className="px-5 text-blue-700 border rounded " type="submit" >run</button>
-    </form>
+    <div ref={codespaceRef} className="flex flex-col outline-1 outline-green-400 font-(family-name:--jet-brains) ">
+      <form className="flex flex-col flex-2" id="code-form" onSubmit={handleSubmit}>
+        <div className="text-left ">
+          <select name="language" id="drop" className="border border-black">
+            <option value="js">Javascript</option>
+            <option value="c">C</option>
+          </select>
+        </div>
+
+        <div className="flex flex-2">
+          <textarea ref={numberAreaRef} disabled id="row-number" className=" text-right border border-black w-10 
+          overflow-hidden resize-none pt-3" cols="1" >
+          </textarea>
+          <textarea ref={textAreaRef} onScroll={handleScroll} className="flex-2 border border-black resize-none pl-3 pt-3 "
+            cols="130" name="code" id="code" ></textarea>
+        </div>
+        <HorizVertSlider resultBoxRef={resultBoxRef} />
+        <ResultBox ref={resultBoxRef} result={result} />
+        <button className="px-5 text-blue-700 border rounded " type="submit" >run</button>
+      </form>
+    </div>
   )
-}
+});
 

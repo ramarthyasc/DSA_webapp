@@ -7,12 +7,14 @@ import '../styles/Drawboard.css';
 import { useRef, useState } from 'react';
 import { QuestionContext } from '../context/QuestionContext';
 import { CodeSpace } from '../components/CodeSpace';
+import { HorizVertSlider } from '../components/HorizVertSlider.jsx';
 
 function Drawboard() {
   const user = useOutletContext();
 
 
   const canvasRef = useRef();
+  const codespaceRef = useRef();
   const [canvasEdgeMotionCoord, setCanvasEdgeMotionCoord] = useState(null);
 
 
@@ -40,8 +42,8 @@ function Drawboard() {
           <QuestionContext.Provider value={{ isCoding, setIsCoding }} >
             <QuestionTab />
           </QuestionContext.Provider>
-          {/* <Slider canvasRef={canvasRef} setCanvasEdgeMotionCoord={setCanvasEdgeMotionCoord} /> */}
-          <CodeSpace />
+          <HorizVertSlider codespaceRef={codespaceRef} />
+          <CodeSpace ref={codespaceRef} />
         </div>
       </>
     )

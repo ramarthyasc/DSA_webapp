@@ -69,6 +69,7 @@ exports.executeCodeFile = (spawn, path, fs, codeFolderPath, codeFilePath, codeLa
           })
 
           run.stderr.on('data', (data) => {
+            console.error("run subprocess stderr: ", data);
             stderrChunks.push(data);
           })
 

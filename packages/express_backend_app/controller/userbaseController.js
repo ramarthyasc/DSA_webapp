@@ -46,6 +46,7 @@ const validateUser = [
 
 exports.userCreatePost = [
   validateUser,
+
   (req, res) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
