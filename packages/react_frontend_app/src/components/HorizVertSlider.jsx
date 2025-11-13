@@ -19,9 +19,9 @@ export function HorizVertSlider(props) {
 
     //styles
     if (props.resultBoxRef) {
-      document.body.classList.add("bg-amber-500", "cursor-ns-resize");
+      document.body.classList.add("bg-amber-500", "cursor-ns-resize!");
     } else if (props.codespaceRef) {
-      document.body.classList.add("bg-amber-500", "cursor-ew-resize");
+      document.body.classList.add("bg-amber-500", "cursor-ew-resize!");
     }
   }
 
@@ -58,9 +58,9 @@ export function HorizVertSlider(props) {
       //styles
       if (props.resultBoxRef) {
         console.log("helloooo")
-        document.body.classList.remove("bg-amber-500", "cursor-ns-resize");
+        document.body.classList.remove("bg-amber-500", "cursor-ns-resize!");
       } else if (props.codespaceRef) {
-        document.body.classList.remove("bg-amber-500", "cursor-ew-resize");
+        document.body.classList.remove("bg-amber-500", "cursor-ew-resize!");
       }
 
     }

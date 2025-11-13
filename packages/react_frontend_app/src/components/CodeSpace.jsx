@@ -89,13 +89,14 @@ export const CodeSpace = forwardRef((props, codespaceRef) => {
     // implement uneditable numbers along the left side +
     // backend verification
     <div ref={codespaceRef} className="flex flex-col outline-1 outline-green-400 font-(family-name:--jet-brains) ">
+      {/* change language */}
+      <div className="text-left ">
+        <select name="language" id="drop" className="border border-black hover:cursor-pointer">
+          <option value="js" className="hover:cursor-pointer">Javascript</option>
+          <option value="c" className="hover:cursor-pointer">C</option>
+        </select>
+      </div>
       <form className="flex flex-col flex-2" id="code-form" onSubmit={handleSubmit}>
-        <div className="text-left ">
-          <select name="language" id="drop" className="border border-black">
-            <option value="js">Javascript</option>
-            <option value="c">C</option>
-          </select>
-        </div>
 
         <div className="flex flex-2">
           <textarea ref={numberAreaRef} disabled id="row-number" className=" text-right border border-black w-10 
