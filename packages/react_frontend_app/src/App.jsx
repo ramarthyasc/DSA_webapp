@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { QuestionContext } from './context/QuestionContext.jsx';
 
 function App() {
+  console.log("App")
 
   // Check if the session has jwt. If no, then render Signin component.
   // If yes, then access the route with the jwt to get new JWT, and render NAV bar with signin/ with profile pic.

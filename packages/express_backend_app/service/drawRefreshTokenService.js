@@ -36,7 +36,7 @@ exports.addAndRevokeRTService = async (addRefreshToken, { userid, token,
 }
 
 
-exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, revokeRefreshToken) => {
+exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, revokeRefreshToken, revokeOneRefreshTokenChain) => {
 
   //Check Validity
   const detailRefreshToken = await searchRefreshToken(token);
@@ -49,6 +49,15 @@ exports.verifyValidityExpiryRevokeRTService = async (token, searchRefreshToken, 
   const isRevokedRefreshToken = detailRefreshToken[0].revoked
   if (isRevokedRefreshToken) {
     //RT is invalid (revoked) = Replay attack
+    //If non-revoked latest RT is stolen & sent by the hacker, then if it is a valid RT, 
+    //then he gets another RT linked to the one before & revokes the former one. But, when the User sends his latest RT (Which is now revoked)
+    //then, he gets signed out, but not the Hacker. He can impersonate the user until Absolute Expiry. So to prevent that - whenever Revoked RT
+    //is sent, then invalidate that chain's all RTs.
+
+    // Revoke all RTs ahead of this Revoked RT (ie; RTs having the same absolute_expires_at (when you choose - same userid, then it would
+    // revoke all RT chains (all browsers) of the User, and whenever after RT expiry, when you refresh the browser 2 times, then in the 2nd time,
+    // the Revoked RT is send - which kills all RT chains of the User unnecessarily))
+    await revokeOneRefreshTokenChain(detailRefreshToken[0]);
     return;
   }
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ErrorContext } from '../context/ErrorContext';
 
+
 // Used for When you Refresh your page (If there is Valid refresh token, then generate new JWT from server. If no Valid RT, then don't give access)
 function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJsonWebToken, setUser }) {
+  console.log("Jwtfetcher")
 
   const [error, setError] = useState(false);
 
@@ -47,7 +49,7 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
 
             // typically rtError = "NO_REFRESH_TOKEN". If rtError = "INVALID_REFRESH_TOKEN", 
             // then Hacker is attempting or I refreshed the page after signing out.
-            // When Signing out, I revoke the RT, but the cookie containing that RT is still there.
+            // When Signing out, I revoke the RT, but the cookie containing that RT is still there. (no it's not there)
             console.log(`Refresh token error: ${rtError}`);
             setError(true);
 
@@ -62,7 +64,7 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
     fetcher();
 
 
-  }, [])
+  }, []);
 
   //NOTE: When we return Children or Outlet - then they are renders. So only after all the Consecutive renders are done, then only
   // the useEffects are run. This is BAD - if the useEffects has async functions in it. Because those useEffects run asynchronously.
@@ -86,7 +88,7 @@ function JwtFetcher({ children, jsonWebToken, isLoggedIn, setIsLoggedIn, setJson
   // When there is no jsonWebToken, then it is always noLogged in as they always go together.
   //NOTE: (Refresh page flow and Signout page flow)
   if (!isLoggedIn) {
-    if (error === true) return <>{children}</>  // Only return DYNAMIC RENDERS (render the Children) only after
+    if (error === true) { return <>{children}</> } // Only return DYNAMIC RENDERS (render the Children) only after
     //we made sure that useEffects is run fully in here itself.
     return "...loading"; // block the flow to the children - so that useEffect runs here. (useEffects are prevented from compounding & running last
     // ie; after all children and things are rendered)

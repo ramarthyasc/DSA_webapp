@@ -3,7 +3,7 @@
 const jwt = require('jsonwebtoken');
 const { jwtVerifierService } = require('../service/drawJwtVerifierService.js');
 const { jwtCreatorService } = require('../service/drawJwtCreatorService.js');
-const { searchRefreshToken, revokeRefreshToken, addRefreshToken } = require('../model/drawRefresh_tokensQueries.js');
+const { searchRefreshToken, revokeRefreshToken, addRefreshToken, revokeOneRefreshTokenChain } = require('../model/drawRefresh_tokensQueries.js');
 const { verifyValidityExpiryRevokeRTService, refreshTokenGenerateService, addAndRevokeRTService } = require('../service/drawRefreshTokenService.js');
 const { searchUser } = require('../model/drawUsersQueries.js');
 const crypto = require('crypto');
@@ -34,7 +34,8 @@ exports.rotatingRefreshTokenAndJwt = async (req, res, next) => {
   //--------- Else (Refresh token is Valid and not Expired): 
   //After Absolute expiry, a user absolutely have to signin once more. (This is applicable for all users (hackers too));
 
-  const detailRefreshToken = await verifyValidityExpiryRevokeRTService(refreshToken, searchRefreshToken, revokeRefreshToken);
+  const detailRefreshToken = await verifyValidityExpiryRevokeRTService(refreshToken, searchRefreshToken, revokeRefreshToken,
+    revokeOneRefreshTokenChain);
 
   if (!detailRefreshToken) { // HACKED if Refresh token is different or is a revoked token or is Expired token. 
     // Refresh token revoked if incoming Refresh token is Expired(When RT is expired, it would have been deleted along with the expired cookie.

@@ -28,8 +28,17 @@ async function revokeRefreshToken(detailRefreshToken) {
   const text = "UPDATE refresh_tokens SET revoked = true WHERE token = $1 RETURNING *";
   const values = [detailRefreshToken.token];
   const res = await pool.query(text, values);
-  console.log(`Revoked Refresh token of user: ${res.rows[0].userid}.`);
-  console.log(`Updated ${res.rowCount} row.`)
+  console.log(`Revoked Refresh token of user: ${res.rows[0]?.userid}.`);
+  console.log(`Updated ${res.rowCount} row.`);
+}
+
+async function revokeOneRefreshTokenChain(detailRefreshToken) {
+
+  const text = "UPDATE refresh_tokens SET revoked = true WHERE absolute_expires_at = $1 AND revoked = false RETURNING *";
+  const values = [detailRefreshToken.absolute_expires_at];
+  const res = await pool.query(text, values);
+  console.log(`Revoked All Refresh tokens of the Chain of absolute_expires_at: ${res.rows[0]?.absolute_expires_at}`);
+  console.log(`Updated ${res.rowCount} rows.`);
 }
 
 
@@ -37,4 +46,5 @@ module.exports = {
   addRefreshToken,
   searchRefreshToken,
   revokeRefreshToken,
+  revokeOneRefreshTokenChain,
 }

@@ -1,31 +1,31 @@
 import { useOutletContext } from "react-router-dom";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { Outlet } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
+import { ErrorContext } from '../context/ErrorContext';
 
+//NOTE: ANY ROUTE/PATH CHANGE IS DONE, THEN REACT GOES THROUGH THIS COMPONENT FIRST.
+//
 // This component is only reached after JwtFetcher. So if isLoggedIn==true, then all other states will be true( jsonWebToken, etc..)
 // OR YOU CAN USE A LOADER TO VERIFY JWT FOR THE ROUTES> new Feature
 function JwtAuthorizedRoutes() {
+  console.log("JwtAuthorizedRoutes");
   const [isLoggedIn, setIsLoggedIn, jsonWebToken, setJsonWebToken, setUser, user] = useOutletContext();
+  const setError = useContext(ErrorContext);
 
-  // When a <Link> is clicked, in that moment, the location is changed (pushed to stack). Then because this is React router, 'routes' run
-  // from the root Parent to the child components linearly - until it reaches that specific component mapped to the url.
+  // NOTE: When a <Link> is clicked, in that moment, the location is changed (pushed to stack). The react router walks through the route-tree from root
+  // to the parent component who has the outlet as the new component of the new path. Here, the outlet only is rendered. That's it - to increase
+  // Performance - in REACT ROUTER V6+.
   //
-  //So useLocation state is triggered just when you click the <Link> itself.
+  //But we need this component to run whenever route changes - verify JWT. So we use useLocation here. To Trigger run this component on Route change.
+  //So useLocation state is triggered and the component using the useLocation hook rerenders just when you click the <Link> itself.
   const location = useLocation();
 
-  const [jwtIsVerified, setJwtIsVerified] = useState(false);
+  const jwtIsVerifiedRef = useRef(false);
 
 
-  //SYNCHRONOUSLY WE CAN CHANGE STATE USING useLayoutEffect (a blocking thread)
-  //React renders the component (creates the virtual DOM).
-  // DOM mutations are calculated/applied but not yet painted.
-  // useLayoutEffect runs immediately, synchronously.
-  // Any setState here triggers a new render before the paint.
-  // Only after useLayoutEffect finishes does the browser actually paint the screen.
-  // And then only is useEffect run.
   useLayoutEffect(() => {
-    setJwtIsVerified(false);
+    jwtIsVerifiedRef.current = false;
   }, [location.pathname]);
 
 
@@ -36,7 +36,7 @@ function JwtAuthorizedRoutes() {
   // if there was an invalid (revoked/expired/different) refresh token send to server (Hacker) - then server sends a different valued rtError.
   useEffect(() => {
 
-    if (isLoggedIn && !jwtIsVerified) {
+    if (isLoggedIn && !jwtIsVerifiedRef.current) {
 
       async function jwtVerify() {
         const res = await fetch("/draw-secure", {
@@ -70,7 +70,7 @@ function JwtAuthorizedRoutes() {
             setJsonWebToken(accessToken);
             setIsLoggedIn(true);
             setUser(userDetail);
-            setJwtIsVerified(true);
+            jwtIsVerifiedRef.current = true;
             // user and isloggedIn is already set by jwtfetcher top wrapper itself. So doesn't matter if give it or not. But good pattern to give it.
 
           }
@@ -87,6 +87,7 @@ function JwtAuthorizedRoutes() {
             setIsLoggedIn(false);
             setJsonWebToken(null);
             setUser(null);
+            setError(true);
           }
 
 
@@ -116,7 +117,8 @@ function JwtAuthorizedRoutes() {
   // user pass through or not - to the required path.
 
   if (isLoggedIn) {
-    if (jwtIsVerified) return <Outlet context={user} />
+    if (jwtIsVerifiedRef.current) { return <Outlet context={user} /> }
+
     return "loading";
   }
 
