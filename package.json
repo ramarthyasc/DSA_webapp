@@ -4,5 +4,8 @@
   "workspaces": [
     "packages/express_backend_app/",
     "packages/react_frontend_app/"
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }

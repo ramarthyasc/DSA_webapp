@@ -5,6 +5,9 @@ COPY . .
 # Next, install all packages - as i didin't copy node_modules folder into this container filesystem path
 # clean install - doesn't change the lock file.
 # You can have multiple RUNs
+#
+# INSTALL GIT
+# INSTALL ALL OTHER EXTERNAL DEPENDENCIES TOO
 # INSTALL POSTGRES SERVER TOO & THEN CMD IT IN THE BACKGROUND TOO.
 RUN npm ci
 
