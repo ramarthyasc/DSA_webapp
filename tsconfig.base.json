@@ -8,6 +8,7 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "target": "es2020",
+    "lib": ["es2020", "dom"],
     "types": [],
     // For nodejs:
     // "lib": ["esnext"],

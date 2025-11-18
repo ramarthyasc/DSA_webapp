@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
     "declaration": true,
     "declarationMap": true,
+    "types": ["node"]
   },
   "exclude": ["./public", "./assets", "./view", "dist"],
   "include": ["./**/*.ts"]
